@@ -14,6 +14,7 @@ import firestoreService from '../services/firestoreService';
 import useAuth from '../hooks/useAuth';
 import useFirestoreQuery from '../hooks/useFirestoreQuery';
 
+<<<<<<< HEAD
 const resolveGlobalValue = (key) => {
   if (typeof window !== 'undefined' && typeof window[key] !== 'undefined') {
     return window[key];
@@ -62,6 +63,13 @@ const appId = resolveGlobalValue('__app_id') || import.meta.env.VITE_APP_ID || '
 if (firebaseConfig) {
   setLogLevel('debug');
 }
+=======
+setLogLevel('debug');
+
+const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
+const firebaseConfig =
+  typeof __firebase_config !== 'undefined' ? JSON.parse(__firebase_config) : null;
+>>>>>>> main
 
 const AppContext = createContext(null);
 
@@ -70,6 +78,7 @@ export const useAppContext = () => useContext(AppContext);
 export function AppProvider({ children }) {
   const [db, setDb] = useState(null);
   const [auth, setAuth] = useState(null);
+<<<<<<< HEAD
   const [initializationError, setInitializationError] = useState(null);
 
   useEffect(() => {
@@ -91,13 +100,29 @@ export function AppProvider({ children }) {
     try {
       const sanitizedConfig = validateFirebaseConfig(firebaseConfig);
       const app = initializeApp(sanitizedConfig);
+=======
+
+  useEffect(() => {
+    if (!firebaseConfig || db) return;
+    try {
+      const app = initializeApp(firebaseConfig);
+>>>>>>> main
       setDb(getFirestore(app));
       setAuth(getAuth(app));
     } catch (error) {
       console.error("Erreur d'initialisation Firebase:", error);
+<<<<<<< HEAD
       setInitializationError(error.message || "Impossible d'initialiser Firebase. Vérifiez la configuration fournie.");
     }
   }, [auth, db, firebaseConfig, initializationError]);
+=======
+    }
+  }, [db]);
+
+  if (!firebaseConfig) {
+    console.error('Erreur critique: Configuration Firebase manquante.');
+  }
+>>>>>>> main
 
   const { userId, isAuthReady } = useAuth(auth);
 
@@ -106,13 +131,20 @@ export function AppProvider({ children }) {
   const { data: savedRecipes } = useFirestoreQuery(db, appId, userId, 'saved_recipes');
   const { data: shoppingList } = useFirestoreQuery(db, appId, userId, 'shopping_list');
 
+<<<<<<< HEAD
+=======
+  const [plan, setPlan] = useState({});
+>>>>>>> main
   const planPath = useMemo(() => {
     if (!appId || !userId) return null;
     return `artifacts/${appId}/users/${userId}/planning/weekly_plan`;
   }, [appId, userId]);
 
+<<<<<<< HEAD
   const [plan, setPlan] = useState({});
 
+=======
+>>>>>>> main
   useEffect(() => {
     if (!db || !planPath) return undefined;
 
@@ -124,6 +156,7 @@ export function AppProvider({ children }) {
   }, [db, planPath]);
 
   const updatePlan = useCallback(
+<<<<<<< HEAD
     (updater) => {
       if (!planPath || !db) {
         throw new Error('Impossible de mettre à jour le planning sans Firestore initialisé.');
@@ -136,6 +169,12 @@ export function AppProvider({ children }) {
           .catch((error) => console.error('Erreur de sauvegarde du planning:', error));
         return nextPlan;
       });
+=======
+    (newPlan) => {
+      if (!db || !planPath) return;
+      setPlan(newPlan);
+      firestoreService.setItem(db, planPath, newPlan);
+>>>>>>> main
     },
     [db, planPath],
   );
@@ -167,7 +206,10 @@ export function AppProvider({ children }) {
     shoppingList,
     plan,
     updatePlan,
+<<<<<<< HEAD
     initializationError,
+=======
+>>>>>>> main
   };
 
   return <AppContext.Provider value={value}>{children}</AppContext.Provider>;

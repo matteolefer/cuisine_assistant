@@ -181,6 +181,36 @@ export const geminiService = {
     required: ['category'],
   },
 
+<<<<<<< HEAD
+=======
+  getDemoRecipe: (promptData) => {
+    const { diet, servings, time, difficulty } = promptData;
+    return {
+      titre: `[DÉMO] Tarte Végétarienne (${servings} pers.)`,
+      description: "Une délicieuse tarte de démonstration, parfaite pour tester l'application.",
+      type_plat: 'Plat principal',
+      difficulte: difficulty || 'Facile',
+      temps_preparation_minutes: parseInt(time, 10) || 25,
+      portions: servings || 2,
+      ingredients_manquants: ['1 Pâte feuilletée', '150g de Lardons Végétaux'],
+      ingredients_utilises: ['250g de Champignons', '3 Œufs', '200ml de Crème'],
+      instructions: [
+        'Préchauffer le four à 180°C.',
+        'Faire revenir les champignons et les lardons.',
+        'Mélanger œufs et crème.',
+        'Garnir la pâte et enfourner 30 min.',
+      ],
+      valeurs_nutritionnelles: {
+        calories: '450kcal',
+        proteines: '15g',
+        glucides: '25g',
+        lipides: '30g',
+      },
+      error: true,
+    };
+  },
+
+>>>>>>> main
   async generateRecipe(promptData) {
     try {
       const prompt = buildRecipePrompt(promptData);
@@ -194,6 +224,7 @@ export const geminiService = {
       });
 
       const parsed = parseStructuredCandidate(result);
+<<<<<<< HEAD
       if (!parsed) {
         throw new Error('Réponse IA vide ou non conforme.');
       }
@@ -202,6 +233,15 @@ export const geminiService = {
     } catch (error) {
       console.error('Erreur generateRecipe:', error);
       throw error;
+=======
+      if (parsed) {
+        return parsed;
+      }
+      throw new Error('Réponse IA vide ou non conforme.');
+    } catch (error) {
+      console.error('Erreur generateRecipe:', error);
+      return this.getDemoRecipe(promptData);
+>>>>>>> main
     }
   },
 
@@ -291,10 +331,17 @@ export const geminiService = {
         fallbackPlan[dateString] = {
           dejeuner: lunchRecipe.id
             ? { id: lunchRecipe.id, titre: lunchRecipe.titre }
+<<<<<<< HEAD
             : { id: 'ia-lunch', titre: '[IA] Salade' },
           diner: dinnerRecipe.id
             ? { id: dinnerRecipe.id, titre: dinnerRecipe.titre }
             : { id: 'ia-dinner', titre: '[IA] Pâtes Pesto' },
+=======
+            : { id: 'demo-lunch', titre: '[IA] Salade' },
+          diner: dinnerRecipe.id
+            ? { id: dinnerRecipe.id, titre: dinnerRecipe.titre }
+            : { id: 'demo-dinner', titre: '[IA] Pâtes Pesto' },
+>>>>>>> main
         };
       });
       return fallbackPlan;
