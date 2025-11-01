@@ -38,6 +38,25 @@ const parseMaybeJson = (value) => {
 const firebaseConfig = parseMaybeJson(
   resolveGlobalValue('__firebase_config') || import.meta.env.VITE_FIREBASE_CONFIG,
 );
+
+const validateFirebaseConfig = (config) => {
+  if (!config || typeof config !== 'object') {
+    throw new Error(
+      "Configuration Firebase invalide. Fournissez un objet JSON contenant les clés officielles (apiKey, authDomain, projectId, etc.).",
+    );
+  }
+
+  const requiredKeys = ['apiKey', 'authDomain', 'projectId', 'appId'];
+  const missingKeys = requiredKeys.filter((key) => !config[key]);
+
+  if (missingKeys.length > 0) {
+    throw new Error(
+      `Configuration Firebase incomplète. Clés manquantes: ${missingKeys.join(', ')}.`,
+    );
+  }
+
+  return config;
+};
 const appId = resolveGlobalValue('__app_id') || import.meta.env.VITE_APP_ID || 'cuisine-assistante';
 
 if (firebaseConfig) {
@@ -70,12 +89,13 @@ export function AppProvider({ children }) {
     }
 
     try {
-      const app = initializeApp(firebaseConfig);
+      const sanitizedConfig = validateFirebaseConfig(firebaseConfig);
+      const app = initializeApp(sanitizedConfig);
       setDb(getFirestore(app));
       setAuth(getAuth(app));
     } catch (error) {
       console.error("Erreur d'initialisation Firebase:", error);
-      setInitializationError("Impossible d'initialiser Firebase. Vérifiez la configuration fournie.");
+      setInitializationError(error.message || "Impossible d'initialiser Firebase. Vérifiez la configuration fournie.");
     }
   }, [auth, db, firebaseConfig, initializationError]);
 

@@ -19,12 +19,34 @@ function AppShell() {
 
   if (initializationError) {
     return (
-      <div className="flex h-screen bg-[#FFF9F2] text-[#2F2F2F] font-inter items-center justify-center">
-        <div className="max-w-lg bg-white border border-red-200 text-red-700 rounded-2xl shadow-xl p-8 text-center space-y-4">
-          <h2 className="text-2xl font-semibold">Configuration requise</h2>
-          <p className="text-sm leading-relaxed">{initializationError}</p>
-          <p className="text-xs text-red-500">
-            Fournissez votre configuration Firebase et relancez l'application.
+      <div className="flex h-screen bg-[#FFF9F2] text-[#2F2F2F] font-inter items-center justify-center p-6">
+        <div className="w-full max-w-xl bg-white border border-red-200 text-red-700 rounded-2xl shadow-xl p-8 space-y-5">
+          <div className="space-y-2 text-center">
+            <h2 className="text-2xl font-semibold">Configuration Firebase requise</h2>
+            <p className="text-sm leading-relaxed">{initializationError}</p>
+          </div>
+          <ol className="text-left text-sm leading-relaxed space-y-2 text-red-600/90">
+            <li className="flex items-start gap-3">
+              <span className="mt-1 h-5 w-5 rounded-full bg-red-100 text-red-600 flex items-center justify-center text-xs font-semibold">
+                1
+              </span>
+              Activez Firestore et Authentication dans la console Firebase.
+            </li>
+            <li className="flex items-start gap-3">
+              <span className="mt-1 h-5 w-5 rounded-full bg-red-100 text-red-600 flex items-center justify-center text-xs font-semibold">
+                2
+              </span>
+              Ajoutez la configuration web dans <code className="px-1 py-0.5 bg-red-50 rounded">window.__firebase_config</code> ou <code className="px-1 py-0.5 bg-red-50 rounded">VITE_FIREBASE_CONFIG</code>.
+            </li>
+            <li className="flex items-start gap-3">
+              <span className="mt-1 h-5 w-5 rounded-full bg-red-100 text-red-600 flex items-center justify-center text-xs font-semibold">
+                3
+              </span>
+              Rechargez la page, puis vérifiez la console du navigateur en cas d'erreur persistante.
+            </li>
+          </ol>
+          <p className="text-xs text-red-500 text-center">
+            Besoin d'aide ? Consultez le README pour un exemple de configuration complète.
           </p>
         </div>
       </div>
