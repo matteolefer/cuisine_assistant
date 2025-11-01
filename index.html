@@ -1,0 +1,34 @@
+<!doctype html>
+<html lang="fr">
+  <head>
+    <meta charset="UTF-8" />
+    <link rel="icon" type="image/svg+xml" href="/vite.svg" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Cuisine Assistante</title>
+    <!-- Importation de Tailwind CSS -->
+    <script>
+      // Configuration optionnelle de Tailwind (pour la police Inter)
+      tailwind.config = {
+        theme: {
+          extend: {
+            fontFamily: {
+              inter: ['Inter', 'sans-serif'],
+            },
+            colors: {
+              'creme-100': '#FFF8E7',
+              'green-600': '#7BD389', // Vert Menthe
+              'green-700': '#6AC47A',
+              'corail-500': '#F56C6C', // Corail
+              'corail-600': '#e05a5a',
+            }
+          }
+        }
+      }
+    </script>
+  </head>
+  <body class="bg-creme-100">
+    <div id="root"></div>
+    <script type="module" src="/src/main.jsx"></script>
+  </body>
+</html>
+

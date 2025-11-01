@@ -1,0 +1,50 @@
+type User @table {
+  displayName: String!
+  createdAt: Timestamp!
+  email: String
+  photoUrl: String
+  dietaryRestrictions: [String]
+}
+
+type Recipe @table {
+  title: String!
+  instructions: String!
+  prepTime: Int!
+  cookTime: Int!
+  servings: Int!
+  createdAt: Timestamp!
+  description: String
+  imageUrl: String
+  cuisine: String
+  mealType: String
+  difficulty: String
+  author: User
+}
+
+type Ingredient @table {
+  name: String!
+  unit: String!
+  commonSubstitutes: [String]
+}
+
+type RecipeIngredient @table(key: ["recipe", "ingredient"]) {
+  recipe: Recipe!
+  ingredient: Ingredient!
+  quantity: Float!
+  notes: String
+}
+
+type GroceryList @table {
+  name: String!
+  createdAt: Timestamp!
+  description: String
+  user: User
+}
+
+type GroceryListItem @table(key: ["groceryList", "ingredient"]) {
+  groceryList: GroceryList!
+  ingredient: Ingredient!
+  quantity: Float!
+  unit: String!
+  isChecked: Boolean
+}
