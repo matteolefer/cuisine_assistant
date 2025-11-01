@@ -1,0 +1,110 @@
+import React, { useMemo, useState } from 'react';
+import { useAppContext } from '../../context/AppContext';
+import geminiService from '../../services/geminiService';
+import Button from '../../components/ui/Button';
+import Select from '../../components/ui/Select';
+import { icons } from '../../components/ui/icons';
+
+function PlanificationComponent() {
+  const { savedRecipes, plan, updatePlan, addToast } = useAppContext();
+  const [isPlanningIA, setIsPlanningIA] = useState(false);
+
+  const weekDays = useMemo(() => {
+    const days = [];
+    const today = new Date();
+    const options = { weekday: 'long', day: 'numeric', month: 'short' };
+    for (let i = 0; i < 7; i += 1) {
+      const date = new Date(today);
+      date.setDate(today.getDate() + i);
+      const dateString = date.toISOString().split('T')[0];
+      days.push({ dateString, display: date.toLocaleDateString('fr-FR', options) });
+    }
+    return days;
+  }, []);
+
+  const mealTypes = ['petit-dejeuner', 'dejeuner', 'diner'];
+  const mealLabels = {
+    'petit-dejeuner': 'Petit-déjeuner',
+    dejeuner: 'Déjeuner',
+    diner: 'Dîner',
+  };
+
+  const handleSelectRecipe = (dateString, mealType, recipeId) => {
+    const recipe = savedRecipes.find((item) => item.id === recipeId) || null;
+
+    updatePlan((prevPlan) => {
+      const newPlan = { ...prevPlan };
+      if (!newPlan[dateString]) newPlan[dateString] = {};
+
+      if (recipe) {
+        newPlan[dateString][mealType] = { id: recipe.id, titre: recipe.titre };
+      } else if (newPlan[dateString]) {
+        delete newPlan[dateString][mealType];
+      }
+      return newPlan;
+    });
+  };
+
+  const handleAutoPlan = async () => {
+    setIsPlanningIA(true);
+    try {
+      const generatedPlan = await geminiService.generateWeeklyPlan(savedRecipes, {});
+      if (generatedPlan) {
+        updatePlan(generatedPlan);
+        addToast('Planning de la semaine généré !');
+      } else {
+        addToast("L'IA n'a pas pu générer de planning.", 'error');
+      }
+    } catch (error) {
+      console.error(error);
+      addToast('Erreur de la génération IA.', 'error');
+    } finally {
+      setIsPlanningIA(false);
+    }
+  };
+
+  return (
+    <div className="bg-white rounded-2xl shadow-lg p-6 md:p-8 border border-[#EAEAEA] animate-fade-in">
+      <div className="flex justify-between items-center mb-6">
+        <h2 className="text-4xl font-bold text-gray-800 tracking-tight">Plan de la Semaine</h2>
+        <Button onClick={handleAutoPlan} variant="primary" className="w-auto px-4" disabled={isPlanningIA}>
+          {isPlanningIA ? 'Génération IA...' : (
+            <>
+              <icons.Recettes className="w-5 h-5 inline mr-2" /> Générer (IA)
+            </>
+          )}
+        </Button>
+      </div>
+
+      <div className="space-y-6">
+        {weekDays.map((day) => (
+          <div key={day.dateString} className="bg-white p-6 rounded-xl shadow-lg border border-gray-100">
+            <h3 className="text-xl font-bold text-gray-800 capitalize border-b border-gray-200 pb-3 mb-4">
+              {day.display}
+            </h3>
+            <div className="grid md:grid-cols-3 gap-4">
+              {mealTypes.map((meal) => (
+                <div key={meal}>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">{mealLabels[meal]}</label>
+                  <Select
+                    value={plan[day.dateString]?.[meal]?.id || ''}
+                    onChange={(event) => handleSelectRecipe(day.dateString, meal, event.target.value)}
+                  >
+                    <option value="">-- Choisir --</option>
+                    {savedRecipes.map((recipe) => (
+                      <option key={recipe.id} value={recipe.id}>
+                        {recipe.titre}
+                      </option>
+                    ))}
+                  </Select>
+                </div>
+              ))}
+            </div>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+export default PlanificationComponent;
