@@ -1,20 +1,65 @@
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
+@import "tailwindcss";
 
+
+/* ============================
+   🌿 CULINA GLOBAL THEME
+   ============================ */
+
+/* Base */
 body {
-  font-family: 'Inter', sans-serif;
-  background-color: #FFF9F2;
+  font-family: 'Poppins', sans-serif;
+  background-color: #FFF5E8; /* crème vanille */
+  color: #4B4B4B; /* gris ardoise */
 }
 
+/* Titres */
+h1, h2, h3 {
+  font-family: 'DM Serif Display', serif;
+  color: #627E63; /* vert mousse */
+}
+
+/* Boutons */
 button {
-  transition: all 0.3s ease;
+  @apply rounded-xl transition-all font-medium;
+  background-color: #627E63;
+  color: white;
+  padding: 0.6rem 1.2rem;
+  border: none;
+  cursor: pointer;
 }
 
+button:hover {
+  background-color: #D58B63; /* terre cuite */
+}
+
+/* Scrollbar douce */
 ::-webkit-scrollbar {
   width: 8px;
 }
 ::-webkit-scrollbar-thumb {
-  background-color: #3BA16D;
+  background-color: #A6BBA2; /* vert sauge */
   border-radius: 4px;
+}
+
+/* Liens */
+a {
+  color: #D58B63;
+  text-decoration: none;
+}
+a:hover {
+  text-decoration: underline;
+}
+
+/* Cards & conteneurs */
+.card {
+  @apply bg-white rounded-2xl shadow-md p-5;
+}
+
+/* Inputs */
+input, textarea, select {
+  @apply rounded-lg border border-gray-300 px-3 py-2 outline-none;
+}
+input:focus, textarea:focus, select:focus {
+  border-color: #A6BBA2;
+  box-shadow: 0 0 0 2px rgba(166, 187, 162, 0.3);
 }

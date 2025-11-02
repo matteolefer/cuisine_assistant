@@ -11,18 +11,21 @@ import GeneratingLoader from '../../components/ui/GeneratingLoader';
 import { icons } from '../../components/ui/icons';
 
 export function RecipeDisplay({ recipe: initialRecipe, onSave, isEditing: startEditing = false }) {
-  const { addToast, setActiveView } = useAppContext();
+  const { db, userId, appId, addToast, setActiveView } = useAppContext();
   const [recipe, setRecipe] = useState(initialRecipe);
   const [isEditing, setIsEditing] = useState(startEditing);
   const [rating, setRating] = useState(initialRecipe.note || 0);
   const [personalNote, setPersonalNote] = useState(initialRecipe.note_personnelle || '');
   const [isSaving, setIsSaving] = useState(false);
 
+
   useEffect(() => {
     setRecipe(initialRecipe);
     setRating(initialRecipe.note || 0);
     setPersonalNote(initialRecipe.note_personnelle || '');
   }, [initialRecipe]);
+
+
 
   const handleEditChange = (field, value) => {
     setRecipe((prev) => ({ ...prev, [field]: value }));
@@ -58,9 +61,53 @@ export function RecipeDisplay({ recipe: initialRecipe, onSave, isEditing: startE
   };
 
   const handleAddMissingToShoppingList = async () => {
-    addToast('Ingrédients ajoutés aux courses !', 'success');
-    setActiveView(VIEWS.COURSES);
+    if (!recipe.ingredients_manquants || recipe.ingredients_manquants.length === 0) {
+      addToast('Aucun ingrédient manquant à ajouter.', 'info');
+      return;
+    }
+
+    try {
+      const path = `artifacts/${appId}/users/${userId}/shopping_list`;
+
+      // On vérifie si certains ingrédients existent déjà dans la liste de courses
+      const existingItems = await firestoreService.getItems(db, path);
+      const existingNames = existingItems.map(item => item.name.toLowerCase());
+
+      // On ajoute uniquement les nouveaux ingrédients manquants
+      const newItems = recipe.ingredients_manquants.filter(
+        (name) => !existingNames.includes(name.toLowerCase())
+      );
+
+      if (newItems.length === 0) {
+        addToast('Tous ces ingrédients sont déjà dans votre liste de courses.', 'info');
+        return;
+      }
+
+      // Catégorisation des nouveaux ingrédients (via geminiService) puis ajout à Firestore
+      const categorized = await Promise.all(
+        newItems.map(async (name) => {
+          const category = await geminiService.categorizeIngredient(name);
+          return {
+            name,
+            category,
+            purchased: false,
+            fromRecipe: recipe.titre || 'Recette inconnue',
+          };
+        })
+      );
+
+      await Promise.all(
+        categorized.map((item) => firestoreService.addItem(db, path, item))
+      );
+
+      addToast(`${categorized.length} ingrédient(s) ajouté(s) à la liste de courses.`, 'success');
+      setActiveView(VIEWS.COURSES);
+    } catch (error) {
+      console.error('Erreur ajout ingrédients manquants :', error);
+      addToast('Erreur lors de l’ajout à la liste de courses', 'error');
+    }
   };
+
 
   if (isEditing) {
     return (
@@ -200,11 +247,19 @@ export function RecipeDisplay({ recipe: initialRecipe, onSave, isEditing: startE
       />
 
       <div className="flex flex-col md:flex-row gap-3 mt-8">
-        {recipe.ingredients_manquants && recipe.ingredients_manquants.length > 0 && (
-          <Button onClick={handleAddMissingToShoppingList} variant="danger" className="bg-corail-500 hover:bg-corail-600">
-            <icons.Courses className="w-5 h-5 inline mr-2" /> Ajouter à la Liste de Courses
+        {recipe.ingredients_manquants?.length > 0 ? (
+          <Button
+            onClick={handleAddMissingToShoppingList}
+            variant="danger"
+            className="bg-corail-500 hover:bg-corail-600"
+          >
+            <icons.Courses className="w-5 h-5 inline mr-2" /> Ajouter les {recipe.ingredients_manquants.length} ingrédient(s)
+            manquant(s) à la liste de courses
           </Button>
+        ) : (
+          <p className="text-sm text-gray-500 italic">Tous les ingrédients sont déjà disponibles.</p>
         )}
+
         <Button onClick={() => setIsEditing(true)} variant="secondary">
           <icons.Edit className="w-5 h-5 inline mr-2" /> Modifier la Recette
         </Button>
@@ -226,8 +281,20 @@ function RecettesComponent() {
   const [time, setTime] = useState('30');
   const [difficulty, setDifficulty] = useState('Facile');
   const [customQuery, setCustomQuery] = useState('');
+  const [ingredientMode, setIngredientMode] = useState('use_all'); 
+  const [selectedIngredients, setSelectedIngredients] = useState([]);
+
+  const toggleIngredientSelection = (name) => {
+    setSelectedIngredients((prev) =>
+      prev.includes(name)
+        ? prev.filter((n) => n !== name)
+        : [...prev, name]
+    );
+  };
+
   const [isLoading, setIsLoading] = useState(false);
   const [generatedRecipe, setGeneratedRecipe] = useState(null);
+
 
   const handleSaveRecipe = useCallback(
     async (recipeData, silent = false) => {
@@ -255,14 +322,23 @@ function RecettesComponent() {
     setGeneratedRecipe(null);
 
     const promptData = {
-      ingredients,
+      ingredients:
+        ingredientMode === 'ignore'
+          ? []
+          : ingredientMode === 'use_selected'
+          ? ingredients.filter((i) =>
+              selectedIngredients.includes(i.name || i)
+            )
+          : ingredients,
       equipments,
       servings,
       diet,
       time,
       difficulty,
       customQuery,
+      ingredientMode, // utile pour le prompt côté geminiService
     };
+
 
     try {
       const recipe = await geminiService.generateRecipe(promptData);
@@ -319,6 +395,39 @@ function RecettesComponent() {
               <option value="Difficile">Difficile</option>
             </Select>
           </div>
+        </div>
+                {/* Bloc : Mode d’utilisation des ingrédients */}
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-1">
+            Utilisation des ingrédients disponibles
+          </label>
+          <Select
+            value={ingredientMode}
+            onChange={(e) => setIngredientMode(e.target.value)}
+          >
+            <option value="use_all">Utiliser tous les ingrédients disponibles</option>
+            <option value="use_selected">Sélectionner certains ingrédients</option>
+            <option value="ignore">Ignorer le stock</option>
+          </Select>
+
+          {ingredientMode === 'use_selected' && ingredients?.length > 0 && (
+            <div className="flex flex-wrap gap-2 mt-3">
+              {ingredients.map((ing, index) => (
+                <button
+                  type="button"
+                  key={index}
+                  onClick={() => toggleIngredientSelection(ing.name || ing)}
+                  className={`px-3 py-1 rounded-full text-sm ${
+                    selectedIngredients.includes(ing.name || ing)
+                      ? 'bg-green-600 text-white'
+                      : 'bg-gray-200 hover:bg-gray-300'
+                  }`}
+                >
+                  {ing.name || ing}
+                </button>
+              ))}
+            </div>
+          )}
         </div>
 
         <div>

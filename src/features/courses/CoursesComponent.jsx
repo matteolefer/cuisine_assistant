@@ -8,6 +8,20 @@ function CoursesComponent() {
   const { db, userId, appId, shoppingList, addToast } = useAppContext();
   const [newItemName, setNewItemName] = useState('');
 
+  const categoryIcons = {
+  'Fruits': '🍎',
+  'Légumes': '🥦',
+  'Viandes': '🍖',
+  'Poissons': '🐟',
+  'Produits Laitiers': '🥛',
+  'Boulangerie': '🥖',
+  'Épicerie': '🛒',
+  'Boissons': '🥤',
+  'Surgelés': '🧊',
+  'Autre': '📦',
+};
+
+
   const handleAdd = async (event) => {
     event.preventDefault();
     if (!newItemName.trim()) return;
@@ -78,33 +92,49 @@ function CoursesComponent() {
           message="Les ingrédients manquants des recettes s'ajouteront ici."
         />
       ) : (
-        <ul className="space-y-3">
-          {sortedList.map((item) => (
-            <li
-              key={item.id}
-              className="bg-white p-4 rounded-xl shadow border border-gray-100 flex items-center justify-between transition hover:shadow-lg"
-            >
-              <div className="flex items-center space-x-3">
-                <input
-                  type="checkbox"
-                  checked={item.purchased}
-                  onChange={() => handleToggle(item.id, item.purchased)}
-                  className="w-5 h-5 text-green-600 rounded focus:ring-green-500"
-                />
-                <span className={`text-lg font-medium ${item.purchased ? 'line-through text-gray-400' : 'text-gray-800'}`}>
-                  {item.name}
-                </span>
-              </div>
-              <button
-                onClick={() => handleDelete(item.id)}
-                className="p-2 text-red-500 hover:bg-red-100 rounded-full transition"
-                aria-label={`Supprimer ${item.name}`}
-              >
-                <icons.Trash className="w-5 h-5" />
-              </button>
-            </li>
-          ))}
-        </ul>
+        Object.entries(
+          sortedList.reduce((acc, item) => {
+            const cat = item.category || 'Autre';
+            if (!acc[cat]) acc[cat] = [];
+            acc[cat].push(item);
+            return acc;
+          }, {})
+        ).map(([category, items]) => (
+          <div key={category} className="mb-6">
+            <h3 className="text-2xl font-semibold text-green-700 flex items-center mb-3">
+              <span className="text-2xl mr-2">{categoryIcons[category] || '📦'}</span>
+              {category}
+            </h3>
+
+            <ul className="space-y-3">
+              {items.map((item) => (
+                <li
+                  key={item.id}
+                  className="bg-white p-4 rounded-xl shadow border border-gray-100 flex items-center justify-between transition hover:shadow-lg"
+                >
+                  <div className="flex items-center space-x-3">
+                    <input
+                      type="checkbox"
+                      checked={item.purchased}
+                      onChange={() => handleToggle(item.id, item.purchased)}
+                      className="w-5 h-5 text-green-600 rounded focus:ring-green-500"
+                    />
+                    <span className={`text-lg font-medium ${item.purchased ? 'line-through text-gray-400' : 'text-gray-800'}`}>
+                      {item.name}
+                    </span>
+                  </div>
+                  <button
+                    onClick={() => handleDelete(item.id)}
+                    className="p-2 text-red-500 hover:bg-red-100 rounded-full transition"
+                    aria-label={`Supprimer ${item.name}`}
+                  >
+                    <icons.Trash className="w-5 h-5" />
+                  </button>
+                </li>
+              ))}
+            </ul>
+          </div>
+        ))
       )}
     </div>
   );

@@ -14,6 +14,21 @@ function StockComponent() {
   const [newItemQty, setNewItemQty] = useState('');
   const [newItemUnit, setNewItemUnit] = useState('pièce(s)');
 
+  // 🧩 Ajout du mapping emoji/catégorie (identique à la liste de courses)
+  const categoryIcons = {
+    'Fruits': '🍎',
+    'Légumes': '🥦',
+    'Viandes': '🍖',
+    'Poissons': '🐟',
+    'Produits Laitiers': '🥛',
+    'Boulangerie': '🥖',
+    'Épicerie': '🛒',
+    'Boissons': '🥤',
+    'Surgelés': '🧊',
+    'Autre': '📦',
+  };
+
+  // 🟩 Ajouter un ingrédient au stock
   const handleAdd = async (event) => {
     event.preventDefault();
     if (!newItemName.trim()) return;
@@ -34,13 +49,14 @@ function StockComponent() {
       setNewItemName('');
       setNewItemQty('');
       setNewItemUnit('pièce(s)');
-      addToast('Ingrédient ajouté !');
+      addToast('Ingrédient ajouté au garde-manger !', 'success');
     } catch (error) {
       console.error('Erreur ajout (Stock):', error);
-      addToast("Erreur d'ajout", 'error');
+      addToast("Erreur d'ajout de l'ingrédient", 'error');
     }
   };
 
+  // 🟥 Supprimer un ingrédient
   const handleDelete = async (id) => {
     try {
       const path = `artifacts/${appId}/users/${userId}/ingredients_stock/${id}`;
@@ -52,16 +68,16 @@ function StockComponent() {
     }
   };
 
+  // 🧠 Regroupement par catégorie (comme CoursesComponent)
   const groupedIngredients = useMemo(() => {
     const groups = ingredients.reduce((acc, item) => {
       const category = item.category || 'Autre';
-      if (!acc[category]) {
-        acc[category] = [];
-      }
+      if (!acc[category]) acc[category] = [];
       acc[category].push(item);
       return acc;
     }, {});
 
+    // Trie les catégories par ordre alphabétique
     return Object.keys(groups)
       .sort()
       .reduce((acc, key) => {
@@ -74,7 +90,11 @@ function StockComponent() {
     <div className="bg-white rounded-2xl shadow-lg p-6 md:p-8 border border-[#EAEAEA] animate-fade-in">
       <h2 className="text-4xl font-bold text-gray-800 mb-6 tracking-tight">Mon Garde-Manger</h2>
 
-      <form onSubmit={handleAdd} className="w-full mb-6 bg-white p-4 rounded-xl shadow-lg border border-gray-100 space-y-3">
+      {/* 🧾 Formulaire d’ajout */}
+      <form
+        onSubmit={handleAdd}
+        className="w-full mb-6 bg-white p-4 rounded-xl shadow-lg border border-gray-100 space-y-3"
+      >
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-1">Ingrédient</label>
           <Input
@@ -86,6 +106,7 @@ function StockComponent() {
             required
           />
         </div>
+
         <div className="grid grid-cols-3 gap-2">
           <div className="col-span-2">
             <label className="block text-sm font-medium text-gray-700 mb-1">Quantité</label>
@@ -110,6 +131,7 @@ function StockComponent() {
             </Select>
           </div>
         </div>
+
         <Button
           type="submit"
           className="bg-green-600 text-white p-3 hover:bg-green-700 transition flex items-center justify-center w-full"
@@ -119,6 +141,7 @@ function StockComponent() {
         </Button>
       </form>
 
+      {/* 🧂 Liste d’ingrédients */}
       {ingredients.length === 0 ? (
         <EmptyState
           icon={icons.Stock}
@@ -128,10 +151,14 @@ function StockComponent() {
       ) : (
         <div className="space-y-6">
           {Object.entries(groupedIngredients).map(([category, items]) => (
-            <div key={category}>
-              <h3 className="text-xl font-semibold text-gray-700 mb-3 border-b border-gray-200 pb-2 capitalize">
+            <div key={category} className="mb-6">
+              {/* 🏷️ Titre de catégorie avec emoji */}
+              <h3 className="text-2xl font-semibold text-green-700 flex items-center mb-3">
+                <span className="text-2xl mr-2">{categoryIcons[category] || '📦'}</span>
                 {category}
               </h3>
+
+              {/* Liste des ingrédients */}
               <ul className="space-y-3">
                 {items.map((item) => (
                   <li

@@ -1,84 +1,119 @@
+/**
+ * Service Gemini (v2.6 - Fichier Isolé et robuste JSON)
+ *
+ * Ajouts :
+ * ✅ Fonction `safeJsonParse()` tolérante aux guillemets simples et erreurs mineures.
+ * ✅ Intégration dans `parseStructuredCandidate()` pour fiabiliser le parsing.
+ * ✅ Amélioration du message système : "Réponds uniquement au format JSON strict".
+ */
+
 const API_URL_BASE =
   'https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-09-2025:generateContent';
 
+// === 🔑 Gestion des clés ===
 const getApiKey = () => {
-  if (typeof window !== 'undefined' && window.__gemini_api_key) {
-    return window.__gemini_api_key;
-  }
-  if (typeof import.meta !== 'undefined' && import.meta.env?.VITE_GEMINI_API_KEY) {
+  if (typeof window !== 'undefined' && window.__gemini_api_key) return window.__gemini_api_key;
+  if (typeof import.meta !== 'undefined' && import.meta.env?.VITE_GEMINI_API_KEY)
     return import.meta.env.VITE_GEMINI_API_KEY;
-  }
-  if (typeof process !== 'undefined' && process.env?.VITE_GEMINI_API_KEY) {
-    return process.env.VITE_GEMINI_API_KEY;
-  }
+  if (typeof process !== 'undefined' && process.env?.REACT_APP_GEMINI_API_KEY)
+    return process.env.REACT_APP_GEMINI_API_KEY;
+  if (typeof API_KEY !== 'undefined') return API_KEY;
   return '';
 };
 
-const callGemini = async ({ prompt, responseSchema, generationConfig = {} }) => {
-  const apiKey = getApiKey();
-  if (!apiKey) {
-    throw new Error('Clé API Gemini manquante.');
+// === 🧩 Fonction de parsing tolérante ===
+function safeJsonParse(text) {
+  if (!text) return null;
+  try {
+    return JSON.parse(text);
+  } catch (error) {
+    try {
+      const fixed = text
+        .replace(/'/g, '"') // guillemets simples → doubles
+        .replace(/\n/g, '\\n') // retours à la ligne échappés
+        .replace(/\r/g, '\\r')
+        .replace(/,\s*}/g, '}') // virgule finale objet
+        .replace(/,\s*]/g, ']'); // virgule finale tableau
+      return JSON.parse(fixed);
+    } catch (err) {
+      console.warn('❌ JSON extrait illisible:', err.message);
+      return null;
+    }
   }
+}
+
+// === ⚙️ Fonction d’appel API ===
+const callGemini = async ({ prompt, generationConfig = {}, systemInstruction }) => {
+  const apiKey = getApiKey();
+  if (!apiKey) throw new Error('Clé API Gemini manquante.');
 
   const body = {
-    contents: [
-      {
-        role: 'user',
-        parts: [{ text: prompt }],
-      },
-    ],
+    contents: [{ role: 'user', parts: [{ text: prompt }] }],
     generationConfig: {
       temperature: 0.7,
       topP: 0.95,
       topK: 40,
       ...generationConfig,
     },
+    ...(systemInstruction && { systemInstruction: { parts: [{ text: systemInstruction }] } }),
   };
-
-  if (responseSchema) {
-    body.responseMimeType = 'application/json';
-    body.responseSchema = responseSchema;
-  }
 
   const response = await fetch(`${API_URL_BASE}?key=${apiKey}`, {
     method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-    },
+    headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(body),
   });
 
   if (!response.ok) {
     const errorBody = await response.text();
-    throw new Error(`Erreur Gemini ${response.status}: ${errorBody}`);
+    console.error('Erreur brute de l’API Gemini:', errorBody);
+    try {
+      const errJson = JSON.parse(errorBody);
+      if (errJson.error?.message) {
+        throw new Error(`Erreur Gemini ${response.status}: ${errJson.error.message}`);
+      }
+    } catch {
+      throw new Error(`Erreur Gemini ${response.status}: ${errorBody}`);
+    }
   }
 
   return response.json();
 };
 
+// === 🧠 Parsing des candidats Gemini ===
 const parseStructuredCandidate = (result) => {
   const candidate = result?.candidates?.[0];
-  if (!candidate) return null;
-  const part = candidate.content?.parts?.[0];
+  const part = candidate?.content?.parts?.[0];
   if (!part) return null;
+
   if (part.text) {
-    try {
-      return JSON.parse(part.text);
-    } catch (error) {
-      console.warn('Réponse Gemini non JSON:', part.text);
-      return null;
-    }
+    let text = part.text
+      .replace(/^```json\s*/i, '')
+      .replace(/```$/i, '')
+      .replace(/[\u0000-\u001F]+/g, '')
+      .trim();
+
+    const lastBrace = text.lastIndexOf('}');
+    if (lastBrace !== -1) text = text.substring(0, lastBrace + 1);
+
+    let parsed = safeJsonParse(text);
+    if (parsed) return parsed;
+
+    const match = text.match(/\{[\s\S]*?\}/);
+    if (match) parsed = safeJsonParse(match[0]);
+    if (parsed) return parsed;
+
+    console.warn('❌ Réponse Gemini incomplète. Retour brut tronqué :', text.slice(0, 400));
+    return null;
   }
-  if (part.functionCall?.args) {
-    return part.functionCall.args;
-  }
+
+  if (part.functionCall?.args) return part.functionCall.args;
   return null;
 };
 
+// === 🍴 Formatage d’ingrédients ===
 const formatIngredientList = (items) => {
-  if (!Array.isArray(items) || items.length === 0) {
-    return 'Aucun élément.';
-  }
+  if (!Array.isArray(items) || items.length === 0) return 'Aucun élément.';
   return items
     .map((item) => {
       if (typeof item === 'string') return `- ${item}`;
@@ -90,6 +125,7 @@ const formatIngredientList = (items) => {
     .join('\n');
 };
 
+// === 🧾 Construction du prompt recette ===
 const buildRecipePrompt = ({
   ingredients = [],
   equipments = [],
@@ -98,38 +134,54 @@ const buildRecipePrompt = ({
   time,
   difficulty,
   customQuery,
+  ingredientMode,
 }) => {
-  const baseBrief = `Tu es un chef gastronomique. Propose une recette originale, précise et immédiatement exploitable.`;
+  const baseBrief =
+    'Tu es un chef gastronomique. Propose une recette originale, précise et immédiatement exploitable.';
+
+  const ingredientInstruction = {
+    use_all: `
+Tu dois utiliser **tous les ingrédients listés ci-dessous**.
+Tu peux aussi utiliser les ingrédients de base (sel, poivre, huile, beurre, sucre, farine, eau, lait, œufs, levure, herbes, épices).
+    `,
+    use_selected: `
+Utilise **principalement les ingrédients listés ci-dessous**, mais tu peux ajouter d'autres ingrédients complémentaires si nécessaire.
+Les ingrédients de base sont toujours disponibles (sel, poivre, huile, beurre, sucre, farine, eau, lait, œufs, levure, herbes, épices).
+    `,
+    ignore: `
+Ignore les ingrédients du stock et crée librement une recette cohérente, en supposant que les ingrédients de base sont disponibles.
+    `,
+  }[ingredientMode || 'use_all'];
+
   const constraints = [
-    diet ? `Régime ou préférences: ${diet}.` : null,
-    servings ? `Portions souhaitées: ${servings}.` : null,
-    time ? `Temps maximum de préparation: ${time} minutes.` : null,
-    difficulty ? `Niveau de difficulté attendu: ${difficulty}.` : null,
-    customQuery ? `Demande spécifique de l'utilisateur: ${customQuery}.` : null,
+    diet && `Régime: ${diet}`,
+    servings && `Portions: ${servings}`,
+    time && `Temps max: ${time} minutes`,
+    difficulty && `Difficulté: ${difficulty}`,
+    customQuery && `Demande spécifique: ${customQuery}`,
   ]
     .filter(Boolean)
     .join('\n');
 
-  const ingredientSection = `Ingrédients disponibles:\n${formatIngredientList(ingredients)}`;
-  const equipmentSection = `Équipements de cuisine disponibles:\n${formatIngredientList(equipments)}`;
-
   return [
     baseBrief,
     'Contraintes culinaires:',
-    constraints || 'Aucune contrainte supplémentaire.',
-    ingredientSection,
-    equipmentSection,
-    'Retourne UNIQUEMENT du JSON valide correspondant exactement au schéma fourni (noms de propriétés en snake_case).',
-    'Ajoute une description courte, des étapes détaillées, la liste des ingrédients utilisés et manquants et des estimations nutritionnelles crédibles.',
+    constraints || 'Aucune contrainte.',
+    ingredientInstruction,
+    `Ingrédients disponibles:\n${formatIngredientList(ingredients)}`,
+    `Équipements de cuisine disponibles:\n${formatIngredientList(equipments)}`,
+    'Réponds uniquement au format JSON strict, sans texte avant ni après.',
+    'Utilise toujours des guillemets doubles et respecte le schéma suivant (snake_case).',
   ].join('\n\n');
 };
 
+// === 💡 Service Gemini complet ===
 export const geminiService = {
   RECIPE_SCHEMA: {
     type: 'OBJECT',
     properties: {
       titre: { type: 'STRING' },
-      description: { type: 'STRING', description: 'Description courte et appétissante.' },
+      description: { type: 'STRING' },
       type_plat: { type: 'STRING' },
       difficulte: { type: 'STRING' },
       temps_preparation_minutes: { type: 'INTEGER' },
@@ -163,7 +215,6 @@ export const geminiService = {
     properties: {
       category: {
         type: 'STRING',
-        description: "La catégorie de l'ingrédient.",
         enum: [
           'Fruits',
           'Légumes',
@@ -186,33 +237,49 @@ export const geminiService = {
       const prompt = buildRecipePrompt(promptData);
       const result = await callGemini({
         prompt,
-        responseSchema: this.RECIPE_SCHEMA,
+        systemInstruction: `Réponds uniquement en JSON pur valide (sans texte). Respecte ce schéma : ${JSON.stringify(
+          this.RECIPE_SCHEMA,
+        )}`,
         generationConfig: {
+          responseMimeType: 'application/json',
+          responseSchema: this.RECIPE_SCHEMA,
           temperature: 0.65,
           topP: 0.9,
         },
       });
 
       const parsed = parseStructuredCandidate(result);
-      if (!parsed) {
-        throw new Error('Réponse IA vide ou non conforme.');
-      }
-
+      if (!parsed) throw new Error('Réponse IA vide ou non conforme.');
       return parsed;
     } catch (error) {
       console.error('Erreur generateRecipe:', error);
-      throw error;
+      return {
+        titre: '[ERREUR IA] Recette de Démo',
+        description: `L’IA a échoué (${error.message}). Voici une recette de secours.`,
+        type_plat: 'Plat principal',
+        difficulte: 'Facile',
+        temps_preparation_minutes: 20,
+        portions: 2,
+        ingredients_manquants: ['1 Pâte feuilletée'],
+        ingredients_utilises: ['3 Œufs', '200 ml de Crème'],
+        instructions: ['Préchauffer le four à 180°C.', 'Mélanger œufs et crème.', 'Enfourner 20 min.'],
+        valeurs_nutritionnelles: { calories: '400 kcal' },
+        error: true,
+      };
     }
   },
 
   async categorizeIngredient(ingredientName) {
     try {
-      const prompt = `Classe l'ingrédient suivant dans une seule catégorie parmis la liste fournie. Ingrédient: "${ingredientName}". ` +
-        'Retourne uniquement la clé JSON {"category": "..."} avec une valeur de la liste.';
+      const prompt = `Classe l’ingrédient suivant dans une seule catégorie : "${ingredientName}".`;
       const result = await callGemini({
         prompt,
-        responseSchema: this.CATEGORIZE_SCHEMA,
+        systemInstruction: `Réponds uniquement en JSON valide selon ce schéma : ${JSON.stringify(
+          this.CATEGORIZE_SCHEMA,
+        )}`,
         generationConfig: {
+          responseMimeType: 'application/json',
+          responseSchema: this.CATEGORIZE_SCHEMA,
           temperature: 0.2,
         },
       });
@@ -227,27 +294,25 @@ export const geminiService = {
 
   async formatImportedRecipe(recipeText) {
     try {
-      const prompt =
-        'Transforme la recette brute suivante en JSON structuré correspondant au schéma fourni.' +
-        '\nRecette:\n' +
-        recipeText;
+      const prompt = `Transforme la recette suivante en JSON structuré selon le schéma fourni.\n${recipeText}`;
       const result = await callGemini({
         prompt,
-        responseSchema: this.RECIPE_SCHEMA,
+        systemInstruction: `Réponds uniquement en JSON valide selon ce schéma : ${JSON.stringify(
+          this.RECIPE_SCHEMA,
+        )}`,
         generationConfig: {
+          responseMimeType: 'application/json',
+          responseSchema: this.RECIPE_SCHEMA,
           temperature: 0.5,
         },
       });
       const parsed = parseStructuredCandidate(result);
-      if (parsed) {
-        return parsed;
-      }
-      throw new Error('Formatage IA vide.');
+      return parsed || { titre: '[IMPORT] Recette brute', description: recipeText.slice(0, 100), instructions: [] };
     } catch (error) {
       console.warn('Formatage IA indisponible, fallback:', error);
       return {
         titre: `[IMPORT] ${recipeText.substring(0, 30)}...`,
-        description: "Recette importée et formatée par l'IA (Simulation).",
+        description: 'Recette importée (fallback).',
         instructions: recipeText.split('\n'),
       };
     }
@@ -255,49 +320,34 @@ export const geminiService = {
 
   async generateWeeklyPlan(savedRecipes, constraints = {}) {
     try {
-      const serializedRecipes = JSON.stringify(
+      const serialized = JSON.stringify(
         savedRecipes.map(({ id, titre, difficulte }) => ({ id, titre, difficulte })),
       );
-      const prompt =
-        'Tu es un planificateur culinaire. Crée un planning équilibré pour 7 jours (déjeuner et dîner).' +
-        '\nUtilise uniquement les identifiants fournis.' +
-        `\nRecettes disponibles: ${serializedRecipes}.` +
-        `\nContraintes utilisateur: ${JSON.stringify(constraints)}.` +
-        '\nRetourne un JSON de la forme {"YYYY-MM-DD": {"dejeuner": {"id": "...", "titre": "..."}, "diner": {...}}}.';
-      const result = await callGemini({
-        prompt,
-        generationConfig: {
-          temperature: 0.6,
-        },
-      });
-      const candidate = result?.candidates?.[0]?.content?.parts?.[0]?.text;
-      if (candidate) {
-        return JSON.parse(candidate);
-      }
+      const prompt = `Crée un planning de repas équilibré sur 7 jours (déjeuner et dîner).
+Recettes disponibles: ${serialized}
+Contraintes: ${JSON.stringify(constraints)}
+Retourne un JSON de la forme {"YYYY-MM-DD": {"dejeuner": {"id": "...", "titre": "..."}, "diner": {...}}}.`;
+
+      const result = await callGemini({ prompt, generationConfig: { temperature: 0.6 } });
+      const text = result?.candidates?.[0]?.content?.parts?.[0]?.text;
+      if (text) return safeJsonParse(text);
       throw new Error('Plan IA vide.');
     } catch (error) {
       console.warn('Planification IA indisponible, fallback:', error);
-      const weekDays = [];
+      const week = {};
       const today = new Date();
-      for (let i = 0; i < 7; i += 1) {
-        const date = new Date(today);
-        date.setDate(today.getDate() + i);
-        weekDays.push(date.toISOString().split('T')[0]);
-      }
-      const fallbackPlan = {};
-      weekDays.forEach((dateString) => {
-        const lunchRecipe = savedRecipes[Math.floor(Math.random() * savedRecipes.length)] || {};
-        const dinnerRecipe = savedRecipes[Math.floor(Math.random() * savedRecipes.length)] || {};
-        fallbackPlan[dateString] = {
-          dejeuner: lunchRecipe.id
-            ? { id: lunchRecipe.id, titre: lunchRecipe.titre }
-            : { id: 'ia-lunch', titre: '[IA] Salade' },
-          diner: dinnerRecipe.id
-            ? { id: dinnerRecipe.id, titre: dinnerRecipe.titre }
-            : { id: 'ia-dinner', titre: '[IA] Pâtes Pesto' },
+      for (let i = 0; i < 7; i++) {
+        const d = new Date(today);
+        d.setDate(today.getDate() + i);
+        const dateStr = d.toISOString().split('T')[0];
+        const r1 = savedRecipes[Math.floor(Math.random() * savedRecipes.length)] || {};
+        const r2 = savedRecipes[Math.floor(Math.random() * savedRecipes.length)] || {};
+        week[dateStr] = {
+          dejeuner: { id: r1.id || 'lunch', titre: r1.titre || '[IA] Repas midi' },
+          diner: { id: r2.id || 'dinner', titre: r2.titre || '[IA] Repas soir' },
         };
-      });
-      return fallbackPlan;
+      }
+      return week;
     }
   },
 };
