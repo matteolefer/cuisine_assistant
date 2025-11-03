@@ -249,6 +249,7 @@
       "placeholder": "-- Choisir --"
     }
   },
+
   "toast": {
     "login_success": "Connecté en tant que {{name}}",
     "login_error": "Échec de la connexion Google",

@@ -249,6 +249,7 @@
       "placeholder": "-- Select --"
     }
   },
+
   "toast": {
     "login_success": "Signed in as {{name}}",
     "login_error": "Google sign-in failed",
