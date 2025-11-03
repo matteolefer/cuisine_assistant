@@ -1,26 +1,27 @@
 import React, { useMemo, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { useAppContext } from '../../context/AppContext';
 import firestoreService from '../../services/firestoreService';
 import EmptyState from '../../components/ui/EmptyState';
 import { icons } from '../../components/ui/icons';
 
 function CoursesComponent() {
+  const { t } = useTranslation();
   const { db, userId, appId, shoppingList, addToast } = useAppContext();
   const [newItemName, setNewItemName] = useState('');
 
   const categoryIcons = {
-  'Fruits': '🍎',
-  'Légumes': '🥦',
-  'Viandes': '🍖',
-  'Poissons': '🐟',
-  'Produits Laitiers': '🥛',
-  'Boulangerie': '🥖',
-  'Épicerie': '🛒',
-  'Boissons': '🥤',
-  'Surgelés': '🧊',
-  'Autre': '📦',
-};
-
+    'Fruits': '🍎',
+    'Légumes': '🥦',
+    'Viandes': '🍖',
+    'Poissons': '🐟',
+    'Produits Laitiers': '🥛',
+    'Boulangerie': '🥖',
+    'Épicerie': '🛒',
+    'Boissons': '🥤',
+    'Surgelés': '🧊',
+    'Autre': '📦',
+  };
 
   const handleAdd = async (event) => {
     event.preventDefault();
@@ -29,9 +30,9 @@ function CoursesComponent() {
       const path = `artifacts/${appId}/users/${userId}/shopping_list`;
       await firestoreService.addItem(db, path, { name: newItemName, purchased: false });
       setNewItemName('');
-      addToast('Article ajouté !');
+      addToast(t('shopping.toast.add_success', 'Article ajouté !'));
     } catch (error) {
-      addToast("Erreur d'ajout", 'error');
+      addToast(t('shopping.toast.add_error', "Erreur d'ajout"), 'error');
     }
   };
 
@@ -39,9 +40,9 @@ function CoursesComponent() {
     try {
       const path = `artifacts/${appId}/users/${userId}/shopping_list/${id}`;
       await firestoreService.deleteItem(db, path);
-      addToast('Article supprimé.', 'success');
+      addToast(t('shopping.toast.delete_success', 'Article supprimé.'), 'success');
     } catch (error) {
-      addToast('Erreur de suppression', 'error');
+      addToast(t('shopping.toast.delete_error', 'Erreur de suppression'), 'error');
     }
   };
 
@@ -50,7 +51,7 @@ function CoursesComponent() {
       const path = `artifacts/${appId}/users/${userId}/shopping_list/${id}`;
       await firestoreService.updateItem(db, path, { purchased: !currentState });
     } catch (error) {
-      addToast('Erreur de mise à jour', 'error');
+      addToast(t('shopping.toast.toggle_error', 'Erreur de mise à jour'), 'error');
     }
   };
 
@@ -63,22 +64,24 @@ function CoursesComponent() {
 
   return (
     <div className="bg-white rounded-2xl shadow-lg p-6 md:p-8 border border-[#EAEAEA] animate-fade-in">
-      <h2 className="text-4xl font-bold text-gray-800 mb-6 tracking-tight">Liste de Courses</h2>
+      <h2 className="text-4xl font-bold text-gray-800 mb-6 tracking-tight">
+        {t('shopping.title', 'Liste de Courses')}
+      </h2>
 
       <form onSubmit={handleAdd} className="w-full mb-6">
         <div className="flex shadow-md rounded-xl overflow-hidden bg-white border border-gray-200">
           <input
             type="text"
             className="flex-grow p-4 text-gray-700 focus:ring-green-500 focus:border-green-500 border-none transition"
-            placeholder="Ex: Lait, Pain, Tomates..."
+            placeholder={t('shopping.form.placeholder', 'Ex: Lait, Pain, Tomates...')}
             value={newItemName}
             onChange={(event) => setNewItemName(event.target.value)}
-            aria-label="Nouvel article"
+            aria-label={t('shopping.form.aria.input', 'Nouvel article')}
           />
           <button
             type="submit"
             className="bg-green-600 text-white p-4 hover:bg-green-700 transition flex items-center justify-center"
-            aria-label="Ajouter à la liste"
+            aria-label={t('shopping.form.aria.submit', 'Ajouter à la liste')}
           >
             <icons.Plus className="w-6 h-6" />
           </button>
@@ -88,8 +91,8 @@ function CoursesComponent() {
       {sortedList.length === 0 ? (
         <EmptyState
           icon={icons.Courses}
-          title="Liste de courses vide"
-          message="Les ingrédients manquants des recettes s'ajouteront ici."
+          title={t('shopping.empty.title', 'Liste de courses vide')}
+          message={t('shopping.empty.message', "Les ingrédients manquants des recettes s'ajouteront ici.")}
         />
       ) : (
         Object.entries(
@@ -126,7 +129,10 @@ function CoursesComponent() {
                   <button
                     onClick={() => handleDelete(item.id)}
                     className="p-2 text-red-500 hover:bg-red-100 rounded-full transition"
-                    aria-label={`Supprimer ${item.name}`}
+                    aria-label={t('shopping.list.aria.delete', {
+                      name: item.name,
+                      defaultValue: `Supprimer ${item.name}`,
+                    })}
                   >
                     <icons.Trash className="w-5 h-5" />
                   </button>

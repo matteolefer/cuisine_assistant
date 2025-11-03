@@ -1,4 +1,5 @@
 import React, { useMemo, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { useAppContext } from '../../context/AppContext';
 import firestoreService from '../../services/firestoreService';
 import geminiService from '../../services/geminiService';
@@ -9,6 +10,7 @@ import EmptyState from '../../components/ui/EmptyState';
 import { icons } from '../../components/ui/icons';
 
 function StockComponent() {
+  const { t } = useTranslation();
   const { db, userId, appId, ingredients, addToast } = useAppContext();
   const [newItemName, setNewItemName] = useState('');
   const [newItemQty, setNewItemQty] = useState('');
@@ -49,10 +51,10 @@ function StockComponent() {
       setNewItemName('');
       setNewItemQty('');
       setNewItemUnit('pièce(s)');
-      addToast('Ingrédient ajouté au garde-manger !', 'success');
+      addToast(t('stock.toast.add_success', 'Ingrédient ajouté au garde-manger !'), 'success');
     } catch (error) {
       console.error('Erreur ajout (Stock):', error);
-      addToast("Erreur d'ajout de l'ingrédient", 'error');
+      addToast(t('stock.toast.add_error', "Erreur d'ajout de l'ingrédient"), 'error');
     }
   };
 
@@ -61,10 +63,10 @@ function StockComponent() {
     try {
       const path = `artifacts/${appId}/users/${userId}/ingredients_stock/${id}`;
       await firestoreService.deleteItem(db, path);
-      addToast('Ingrédient supprimé.', 'success');
+      addToast(t('stock.toast.delete_success', 'Ingrédient supprimé.'), 'success');
     } catch (error) {
       console.error('Erreur suppression (Stock):', error);
-      addToast('Erreur de suppression', 'error');
+      addToast(t('stock.toast.delete_error', 'Erreur de suppression'), 'error');
     }
   };
 
@@ -88,7 +90,9 @@ function StockComponent() {
 
   return (
     <div className="bg-white rounded-2xl shadow-lg p-6 md:p-8 border border-[#EAEAEA] animate-fade-in">
-      <h2 className="text-4xl font-bold text-gray-800 mb-6 tracking-tight">Mon Garde-Manger</h2>
+      <h2 className="text-4xl font-bold text-gray-800 mb-6 tracking-tight">
+        {t('stock.title', 'Mon Garde-Manger')}
+      </h2>
 
       {/* 🧾 Formulaire d’ajout */}
       <form
@@ -96,38 +100,44 @@ function StockComponent() {
         className="w-full mb-6 bg-white p-4 rounded-xl shadow-lg border border-gray-100 space-y-3"
       >
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">Ingrédient</label>
+          <label className="block text-sm font-medium text-gray-700 mb-1">
+            {t('stock.form.fields.ingredient', 'Ingrédient')}
+          </label>
           <Input
             type="text"
-            placeholder="Ex: Farine, Tomates..."
+            placeholder={t('stock.form.placeholders.ingredient', 'Ex: Farine, Tomates...')}
             value={newItemName}
             onChange={(event) => setNewItemName(event.target.value)}
-            aria-label="Nouvel ingrédient"
+            aria-label={t('stock.form.aria.ingredient', 'Nouvel ingrédient')}
             required
           />
         </div>
 
         <div className="grid grid-cols-3 gap-2">
           <div className="col-span-2">
-            <label className="block text-sm font-medium text-gray-700 mb-1">Quantité</label>
+            <label className="block text-sm font-medium text-gray-700 mb-1">
+              {t('stock.form.fields.quantity', 'Quantité')}
+            </label>
             <Input
               type="number"
-              placeholder="Ex: 500"
+              placeholder={t('stock.form.placeholders.quantity', 'Ex: 500')}
               value={newItemQty}
               onChange={(event) => setNewItemQty(event.target.value)}
-              aria-label="Quantité"
+              aria-label={t('stock.form.aria.quantity', 'Quantité')}
             />
           </div>
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Unité</label>
+            <label className="block text-sm font-medium text-gray-700 mb-1">
+              {t('stock.form.fields.unit', 'Unité')}
+            </label>
             <Select value={newItemUnit} onChange={(event) => setNewItemUnit(event.target.value)}>
-              <option value="pièce(s)">pièce(s)</option>
-              <option value="g">g</option>
-              <option value="kg">kg</option>
-              <option value="ml">ml</option>
-              <option value="L">L</option>
-              <option value="c. à café">c. à café</option>
-              <option value="c. à soupe">c. à soupe</option>
+              <option value="pièce(s)">{t('stock.form.units.pieces', 'pièce(s)')}</option>
+              <option value="g">{t('stock.form.units.grams', 'g')}</option>
+              <option value="kg">{t('stock.form.units.kilograms', 'kg')}</option>
+              <option value="ml">{t('stock.form.units.milliliters', 'ml')}</option>
+              <option value="L">{t('stock.form.units.liters', 'L')}</option>
+              <option value="c. à café">{t('stock.form.units.teaspoon', 'c. à café')}</option>
+              <option value="c. à soupe">{t('stock.form.units.tablespoon', 'c. à soupe')}</option>
             </Select>
           </div>
         </div>
@@ -135,9 +145,10 @@ function StockComponent() {
         <Button
           type="submit"
           className="bg-green-600 text-white p-3 hover:bg-green-700 transition flex items-center justify-center w-full"
-          aria-label="Ajouter l'ingrédient"
+          aria-label={t('stock.form.aria.submit', "Ajouter l'ingrédient")}
         >
-          <icons.Plus className="w-5 h-5 mr-2" /> Ajouter au stock
+          <icons.Plus className="w-5 h-5 mr-2" />
+          {t('stock.form.submit', 'Ajouter au stock')}
         </Button>
       </form>
 
@@ -145,8 +156,8 @@ function StockComponent() {
       {ingredients.length === 0 ? (
         <EmptyState
           icon={icons.Stock}
-          title="Votre garde-manger est vide"
-          message="Ajoutez vos ingrédients pour générer des recettes."
+          title={t('stock.empty.title', 'Votre garde-manger est vide')}
+          message={t('stock.empty.message', 'Ajoutez vos ingrédients pour générer des recettes.')}
         />
       ) : (
         <div className="space-y-6">
@@ -176,7 +187,7 @@ function StockComponent() {
                     <button
                       onClick={() => handleDelete(item.id)}
                       className="p-2 ml-4 text-red-500 hover:bg-red-100 rounded-full transition"
-                      aria-label={`Supprimer ${item.name}`}
+                      aria-label={t('stock.list.aria.delete', { name: item.name, defaultValue: `Supprimer ${item.name}` })}
                     >
                       <icons.Trash className="w-5 h-5" />
                     </button>
