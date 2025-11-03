@@ -17,6 +17,8 @@ import {
 function StockComponent() {
   const { t, i18n } = useTranslation();
   const { db, userId, appId, ingredients, addToast } = useAppContext();
+  const { t } = useTranslation();
+  const { db, userId, appId, ingredients, addToast, language } = useAppContext();
   const [newItemName, setNewItemName] = useState('');
   const [newItemQty, setNewItemQty] = useState('');
   const [newItemUnit, setNewItemUnit] = useState('pièce(s)');
@@ -34,12 +36,25 @@ function StockComponent() {
         newItemName.trim(),
         i18n.language,
       );
+      const trimmedName = newItemName.trim();
+      const category = await geminiService.categorizeIngredient(trimmedName, { language });
+      const finalCategory = category || 'Autre';
+
+      if (!category) {
+        addToast(
+          t('toast.categorize_fallback', {
+            name: trimmedName,
+            defaultValue: `Catégorie inconnue pour ${trimmedName} : utilisation de "Autre".`,
+          }),
+          'warning',
+        );
+      }
 
       const newItem = {
-        name: newItemName.trim(),
+        name: trimmedName,
         quantity: parseFloat(newItemQty) || 0,
         unit: newItemUnit,
-        category,
+        category: finalCategory,
       };
 
       await firestoreService.addItem(db, path, newItem);

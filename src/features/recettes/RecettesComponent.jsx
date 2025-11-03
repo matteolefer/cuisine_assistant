@@ -22,7 +22,7 @@ const getServingsLabel = (t, count) =>
     : t('recipe.display.labels.servings', { count });
 
 export function RecipeDisplay({ recipe: initialRecipe, onSave, isEditing: startEditing = false }) {
-  const { db, userId, appId, addToast, setActiveView } = useAppContext();
+  const { db, userId, appId, addToast, setActiveView, language } = useAppContext();
   const { t } = useTranslation();
   const [recipe, setRecipe] = useState(initialRecipe);
   const [isEditing, setIsEditing] = useState(startEditing);
@@ -76,6 +76,10 @@ export function RecipeDisplay({ recipe: initialRecipe, onSave, isEditing: startE
     }
 
     try {
+      if (!db || !userId || !appId) {
+        throw new Error('Firestore non initialisé ou informations utilisateur manquantes.');
+      }
+
       const path = `artifacts/${appId}/users/${userId}/shopping_list`;
       const existingItems = await firestoreService.getItems(db, path);
       const existingNames = existingItems.map((item) => item.name.toLowerCase());
@@ -89,17 +93,31 @@ export function RecipeDisplay({ recipe: initialRecipe, onSave, isEditing: startE
         return;
       }
 
+      const fallbackNames = [];
+
       const categorized = await Promise.all(
         newItems.map(async (name) => {
           const category = await geminiService.categorizeIngredient(name, i18n.language);
+          const category = await geminiService.categorizeIngredient(name, { language });
+          if (!category) fallbackNames.push(name);
           return {
             name,
-            category,
+            category: category || 'Autre',
             purchased: false,
             fromRecipe: recipe.titre || t('recipe.generator.title'),
           };
         }),
       );
+
+      if (fallbackNames.length > 0) {
+        addToast(
+          t('toast.categorize_fallback', {
+            name: fallbackNames.join(', '),
+            defaultValue: `Catégorie inconnue pour ${fallbackNames.join(', ')} : utilisation de "Autre".`,
+          }),
+          'warning',
+        );
+      }
 
       await Promise.all(
         categorized.map((item) => firestoreService.addItem(db, path, item)),

@@ -10,7 +10,7 @@ import { RecipeDisplay } from '../recettes/RecettesComponent';
 
 function FavorisComponent() {
   const { t } = useTranslation();
-  const { db, userId, appId, addToast, savedRecipes } = useAppContext();
+  const { db, userId, appId, addToast, savedRecipes, language } = useAppContext();
   const [isImporting, setIsImporting] = useState(false);
   const [importText, setImportText] = useState('');
   const [isFormatting, setIsFormatting] = useState(false);
@@ -22,9 +22,47 @@ function FavorisComponent() {
     setIsFormatting(true);
 
     try {
-      const formattedRecipe = await geminiService.formatImportedRecipe(importText);
+      const trimmed = importText.trim();
+      const aiRecipe = await geminiService.formatImportedRecipe(trimmed, { language });
+      const [firstLine, ...restLines] = trimmed.split(/\n+/);
+      const fallbackTitle = firstLine || t('favorites.import.fallback_title', 'Recette importée (brouillon)');
+      const fallbackInstructions = restLines.length > 0 ? restLines : [trimmed];
+
+      const recipeToSave = {
+        titre: aiRecipe?.titre || fallbackTitle,
+        description: aiRecipe?.description || restLines.join('\n') || trimmed,
+        type_plat: aiRecipe?.type_plat || '',
+        difficulte: aiRecipe?.difficulte || '',
+        temps_preparation_minutes: Number.parseInt(aiRecipe?.temps_preparation_minutes, 10) || 0,
+        portions: Number.parseInt(aiRecipe?.portions, 10) || 0,
+        ingredients_utilises: Array.isArray(aiRecipe?.ingredients_utilises)
+          ? aiRecipe.ingredients_utilises
+          : [],
+        ingredients_manquants: Array.isArray(aiRecipe?.ingredients_manquants)
+          ? aiRecipe.ingredients_manquants
+          : [],
+        instructions: Array.isArray(aiRecipe?.instructions) && aiRecipe.instructions.length > 0
+          ? aiRecipe.instructions
+          : fallbackInstructions,
+        valeurs_nutritionnelles: {
+          calories: aiRecipe?.valeurs_nutritionnelles?.calories || '',
+          proteines: aiRecipe?.valeurs_nutritionnelles?.proteines || '',
+          glucides: aiRecipe?.valeurs_nutritionnelles?.glucides || '',
+          lipides: aiRecipe?.valeurs_nutritionnelles?.lipides || '',
+        },
+      };
+
+      const usedFallback = !aiRecipe || !aiRecipe.titre;
+
+      if (usedFallback) {
+        addToast(
+          t('favorites.toast.import_fallback', 'Formatage IA indisponible, brouillon enregistré.'),
+          'warning',
+        );
+      }
+
       const path = `artifacts/${appId}/users/${userId}/saved_recipes`;
-      await firestoreService.addItem(db, path, formattedRecipe);
+      await firestoreService.addItem(db, path, recipeToSave);
 
       addToast(t('favorites.toast.import_success', 'Recette importée !'));
       setIsImporting(false);
