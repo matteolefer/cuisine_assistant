@@ -97,6 +97,7 @@ export function RecipeDisplay({ recipe: initialRecipe, onSave, isEditing: startE
 
       const categorized = await Promise.all(
         newItems.map(async (name) => {
+          const category = await geminiService.categorizeIngredient(name, i18n.language);
           const category = await geminiService.categorizeIngredient(name, { language });
           if (!category) fallbackNames.push(name);
           return {

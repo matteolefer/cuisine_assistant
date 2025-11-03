@@ -1,3 +1,10 @@
+import {
+  CATEGORY_KEYS,
+  DEFAULT_CATEGORY_KEY,
+  canonicalizeCategory,
+  getCategoryLabel,
+} from '../constants/categories';
+
 /**
  * Service Gemini (v2.7 - Multilingue + JSON robuste)
  *
@@ -169,6 +176,55 @@ const getLanguageInstruction = (language = 'fr') => {
   }
 };
 
+const SUPPORTED_LANGUAGES = ['fr', 'en', 'es'];
+
+const resolveLanguage = (language = 'fr') =>
+  SUPPORTED_LANGUAGES.includes(language) ? language : 'fr';
+
+const CATEGORY_RESPONSE_SCHEMA = {
+  type: 'OBJECT',
+  properties: {
+    category: { type: 'STRING' },
+  },
+  required: ['category'],
+};
+
+const buildCategoryList = (language) =>
+  CATEGORY_KEYS.map((key) => `${key} → ${getCategoryLabel(key, language)}`).join('\n');
+
+const CATEGORY_PROMPTS = {
+  fr: (ingredient, language) =>
+    [
+      `Classifie l'ingrédient « ${ingredient} » dans une catégorie canonique.`,
+      'Choisis uniquement parmi les clés listées ci-dessous.',
+      'Clés disponibles (clé → libellé) :',
+      buildCategoryList(language),
+      'Réponds en JSON strict : {"category":"<clé>"}.',
+    ].join('\n\n'),
+  en: (ingredient, language) =>
+    [
+      `Classify the ingredient "${ingredient}" into one canonical category.`,
+      'Pick only from the keys listed below.',
+      'Available keys (key → label):',
+      buildCategoryList(language),
+      'Answer strictly in JSON: {"category":"<key>"}.',
+    ].join('\n\n'),
+  es: (ingredient, language) =>
+    [
+      `Clasifica el ingrediente "${ingredient}" en una categoría canónica.`,
+      'Elige solo entre las claves indicadas abajo.',
+      'Claves disponibles (clave → etiqueta):',
+      buildCategoryList(language),
+      'Responde estrictamente en JSON: {"category":"<clave>"}.',
+    ].join('\n\n'),
+};
+
+const buildCategorizePrompt = (ingredient, language) => {
+  const resolvedLanguage = resolveLanguage(language);
+  const template = CATEGORY_PROMPTS[resolvedLanguage] || CATEGORY_PROMPTS.fr;
+  return template(ingredient, resolvedLanguage);
+};
+
 const PROMPT_TEXTS = {
   fr: {
     intro: 'Tu es un chef gastronomique virtuel.',
@@ -337,14 +393,19 @@ const PROMPT_TEXTS = {
 };
 
 // === 🍴 Formatage d’ingrédients ===
-const formatIngredientList = (items, strings) => {
+const formatIngredientList = (items, strings, language) => {
   if (!Array.isArray(items) || items.length === 0) return strings.none;
   return items
     .map((item) => {
       if (typeof item === 'string') return `- ${item}`;
       const { name, quantity, unit, category } = item;
       const qty = quantity ? `${quantity} ${unit || ''}`.trim() : '';
-      const cat = category ? ` | ${strings.categoryLabel}: ${category}` : '';
+      const cat = category
+        ? ` | ${strings.categoryLabel}: ${getCategoryLabel(
+            canonicalizeCategory(category),
+            resolveLanguage(language),
+          )}`
+        : '';
       return `- ${name}${qty ? ` (${qty})` : ''}${cat}`;
     })
     .join('\n');
@@ -382,8 +443,8 @@ const buildRecipePrompt = ({
     strings.constraintsHeading,
     constraints || strings.noConstraints,
     ingredientInstruction,
-    `${strings.availableIngredients}\n${formatIngredientList(ingredients, strings)}`,
-    `${strings.availableEquipments}\n${formatIngredientList(equipments, strings)}`,
+    `${strings.availableIngredients}\n${formatIngredientList(ingredients, strings, language)}`,
+    `${strings.availableEquipments}\n${formatIngredientList(equipments, strings, language)}`,
     strings.jsonReminder,
     strings.schemaReminder,
   ].join('\n\n');
@@ -467,6 +528,7 @@ const sanitizeWeeklyPlan = (rawPlan, recipes = []) => {
 
 // === 💡 Service Gemini complet ===
 export const geminiService = {
+  CATEGORY_SCHEMA: CATEGORY_RESPONSE_SCHEMA,
   RECIPE_SCHEMA: {
     type: 'OBJECT',
     properties: {
@@ -670,13 +732,14 @@ export const geminiService = {
     try {
       // Récupération de la langue depuis promptData
       const { language = 'fr' } = promptData;
-      const prompt = buildRecipePrompt({ ...promptData, language });
-      const strings = PROMPT_TEXTS[language] || PROMPT_TEXTS.fr;
+      const resolvedLanguage = resolveLanguage(language);
+      const prompt = buildRecipePrompt({ ...promptData, language: resolvedLanguage });
+      const strings = PROMPT_TEXTS[resolvedLanguage] || PROMPT_TEXTS.fr;
 
       const result = await callGemini({
         prompt,
         systemInstruction: [
-          getLanguageInstruction(language),
+          getLanguageInstruction(resolvedLanguage),
           strings.jsonReminder,
           strings.schemaReminder,
           `${strings.schemaLabel} ${JSON.stringify(this.RECIPE_SCHEMA)}`,
@@ -706,6 +769,39 @@ export const geminiService = {
         valeurs_nutritionnelles: { calories: '400 kcal' },
         error: true,
       };
+    }
+  },
+
+  async categorizeIngredient(ingredientName, language = 'fr') {
+    const trimmedName = ingredientName?.trim();
+    if (!trimmedName) return DEFAULT_CATEGORY_KEY;
+
+    const resolvedLanguage = resolveLanguage(language);
+    const prompt = buildCategorizePrompt(trimmedName, resolvedLanguage);
+
+    try {
+      const result = await callGemini({
+        prompt,
+        systemInstruction: [
+          getLanguageInstruction(resolvedLanguage),
+          'You must always output valid JSON following the provided schema.',
+          `Return one of these canonical keys: ${CATEGORY_KEYS.join(', ')}.`,
+          `Schema: ${JSON.stringify(CATEGORY_RESPONSE_SCHEMA)}`,
+        ].join('\n'),
+        generationConfig: {
+          responseMimeType: 'application/json',
+          responseSchema: CATEGORY_RESPONSE_SCHEMA,
+          temperature: 0.2,
+          topP: 0.8,
+        },
+      });
+
+      const parsed = parseStructuredCandidate(result);
+      const category = canonicalizeCategory(parsed?.category);
+      return category;
+    } catch (error) {
+      console.error('Erreur categorizeIngredient:', error);
+      return DEFAULT_CATEGORY_KEY;
     }
   },
 };

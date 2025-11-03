@@ -6,31 +6,29 @@ import Button from '../../components/ui/Button';
 import EmptyState from '../../components/ui/EmptyState';
 import Input from '../../components/ui/Input';
 import { icons } from '../../components/ui/icons';
+import {
+  CATEGORY_EMOJIS,
+  DEFAULT_CATEGORY_KEY,
+  canonicalizeCategory,
+} from '../../constants/categories';
 
 function CoursesComponent() {
   const { t } = useTranslation();
   const { db, userId, appId, shoppingList, addToast } = useAppContext();
   const [newItemName, setNewItemName] = useState('');
 
-  const categoryIcons = {
-    'Fruits': '🍎',
-    'Légumes': '🥦',
-    'Viandes': '🍖',
-    'Poissons': '🐟',
-    'Produits Laitiers': '🥛',
-    'Boulangerie': '🥖',
-    'Épicerie': '🛒',
-    'Boissons': '🥤',
-    'Surgelés': '🧊',
-    'Autre': '📦',
-  };
+  const fallbackCategoryLabel = t('categories.other', 'Autre');
 
   const handleAdd = async (event) => {
     event.preventDefault();
     if (!newItemName.trim()) return;
     try {
       const path = `artifacts/${appId}/users/${userId}/shopping_list`;
-      await firestoreService.addItem(db, path, { name: newItemName, purchased: false });
+      await firestoreService.addItem(db, path, {
+        name: newItemName.trim(),
+        purchased: false,
+        category: DEFAULT_CATEGORY_KEY,
+      });
       setNewItemName('');
       addToast(t('shopping.toast.add_success', 'Article ajouté !'));
     } catch (error) {
@@ -100,18 +98,65 @@ function CoursesComponent() {
       ) : (
         Object.entries(
           sortedList.reduce((acc, item) => {
-            const cat = item.category || 'Autre';
-            if (!acc[cat]) acc[cat] = [];
-            acc[cat].push(item);
+            const category = canonicalizeCategory(item.category);
+            if (!acc[category]) acc[category] = [];
+            acc[category].push(item);
             return acc;
           }, {})
-        ).map(([category, items]) => (
-          <div key={category} className="mb-6">
-            <h3 className="text-2xl font-semibold text-green-700 flex items-center mb-3">
-              <span className="text-2xl mr-2">{categoryIcons[category] || '📦'}</span>
-              {category}
-            </h3>
+        )
+          .sort((a, b) => {
+            const labelA = t(`categories.${a[0]}`, fallbackCategoryLabel);
+            const labelB = t(`categories.${b[0]}`, fallbackCategoryLabel);
+            return labelA.localeCompare(labelB);
+          })
+          .map(([category, items]) => {
+            const emoji = CATEGORY_EMOJIS[category] || CATEGORY_EMOJIS[DEFAULT_CATEGORY_KEY];
+            const label = t(`categories.${category}`, fallbackCategoryLabel);
 
+            return (
+              <div key={category} className="mb-6">
+                <h3 className="text-2xl font-semibold text-green-700 flex items-center mb-3">
+                  <span className="text-2xl mr-2">{emoji}</span>
+                  {label}
+                </h3>
+
+                <ul className="space-y-3">
+                  {items.map((item) => (
+                    <li
+                      key={item.id}
+                      className="bg-white p-4 rounded-xl shadow border border-gray-100 flex items-center justify-between transition hover:shadow-lg"
+                    >
+                      <div className="flex items-center space-x-3">
+                        <input
+                          type="checkbox"
+                          checked={item.purchased}
+                          onChange={() => handleToggle(item.id, item.purchased)}
+                          className="w-5 h-5 text-green-600 rounded focus:ring-green-500"
+                        />
+                        <span
+                          className={`text-lg font-medium ${
+                            item.purchased ? 'line-through text-gray-400' : 'text-gray-800'
+                          }`}
+                        >
+                          {item.name}
+                        </span>
+                      </div>
+                      <button
+                        onClick={() => handleDelete(item.id)}
+                        className="p-2 text-red-500 hover:bg-red-100 rounded-full transition"
+                        aria-label={t('shopping.list.aria.delete', {
+                          name: item.name,
+                          defaultValue: `Supprimer ${item.name}`,
+                        })}
+                      >
+                        <icons.Trash className="w-5 h-5" />
+                      </button>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            );
+          })
             <ul className="space-y-3">
               {items.map((item) => (
                 <li
