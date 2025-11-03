@@ -1,0 +1,15 @@
+{
+  "name": "Culina",
+  "short_name": "Culina",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#fff2de",
+  "theme_color": "#7da87b",
+  "icons": [
+    {
+      "src": "/apple-touch-icon.png",
+      "sizes": "180x180",
+      "type": "image/png"
+    }
+  ]
+}
