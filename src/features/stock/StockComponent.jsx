@@ -196,13 +196,15 @@ function StockComponent() {
                         </span>
                       )}
                     </p>
-                    <button
+                    <Button
                       onClick={() => handleDelete(item.id)}
-                      className="p-2 ml-4 text-red-500 hover:bg-red-100 rounded-full transition"
+                      variant="ghost-danger"
+                      type="button"
+                      className="p-2 ml-4 text-red-500 hover:text-red-600 rounded-full w-auto h-auto focus-visible:ring-red-500"
                       aria-label={t('stock.list.aria.delete', { name: item.name, defaultValue: `Supprimer ${item.name}` })}
                     >
                       <icons.Trash className="w-5 h-5" />
-                    </button>
+                    </Button>
                   </li>
                 ))}
               </ul>

@@ -159,8 +159,9 @@ function FavorisComponent() {
               </div>
               <Button
                 onClick={() => handleDelete(recipe.id)}
-                variant="danger"
-                className="p-2 ml-4 w-auto h-auto !bg-transparent !text-red-500 hover:!bg-red-100 rounded-full"
+                variant="ghost-danger"
+                type="button"
+                className="p-2 ml-4 w-auto h-auto rounded-full focus-visible:ring-red-500"
                 aria-label={t('favorites.list.aria.delete', {
                   name: recipe.titre,
                   defaultValue: `Supprimer ${recipe.titre}`,
@@ -176,13 +177,15 @@ function FavorisComponent() {
       {viewRecipe && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-40 overflow-auto">
           <div className="relative w-full max-w-2xl max-h-[90vh] overflow-auto no-scrollbar">
-            <button
+            <Button
               onClick={() => setViewRecipe(null)}
-              className="absolute -top-2 -right-2 text-gray-700 bg-white rounded-full p-2 z-10 shadow"
+              variant="plain"
+              type="button"
+              className="absolute -top-2 -right-2 text-gray-700 bg-white rounded-full p-2 z-10 shadow w-auto h-auto"
               aria-label={t('favorites.modal.close', 'Fermer la vue')}
             >
               <icons.Close className="w-6 h-6" />
-            </button>
+            </Button>
             <RecipeDisplay recipe={viewRecipe} onSave={handleSave} />
           </div>
         </div>
