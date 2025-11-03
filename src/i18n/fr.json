@@ -1,23 +1,267 @@
 {
-  "title": "Générer une Recette",
-  "diet": "Régime",
-  "normal": "Normal",
-  "vegetarian": "Végétarien",
-  "vegan": "Vegan",
-  "gluten_free": "Sans Gluten",
-  "people": "Personnes",
-  "max_time": "Temps Max (min)",
-  "difficulty": "Difficulté",
-  "easy": "Facile",
-  "medium": "Moyenne",
-  "hard": "Difficile",
-  "ingredient_usage": "Utilisation des ingrédients disponibles",
-  "use_all": "Utiliser tous les ingrédients disponibles",
-  "use_selected": "Sélectionner certains ingrédients",
-  "ignore": "Ignorer le stock",
-  "custom_query": "Envie particulière ?",
-  "placeholder_query": "Ex: 'Plat réconfortant', 'utiliser les courgettes'...",
-  "generate_button": "Trouver une recette",
-  "generating": "Génération...",
-  "generation_failed": "Échec de la génération de recette"
+  "app": {
+    "title": "Culina",
+    "subtitle": "Cuisine simplement, sentez-vous inspiré",
+    "logout": "Déconnexion",
+    "made_with": "Fait avec ❤️ et React",
+    "views": {
+      "stock": "Stock",
+      "equipement": "Équipement",
+      "recettes": "Recettes",
+      "favoris": "Favoris",
+      "courses": "Courses",
+      "planification": "Planification"
+    }
+  },
+  "auth": {
+    "login_google": "Se connecter avec Google",
+    "notice": "Votre compte Google est utilisé uniquement pour l’accès et la synchronisation sécurisée de vos recettes."
+  },
+  "language": {
+    "fr": "🇫🇷 Français",
+    "en": "🇬🇧 English",
+    "es": "🇪🇸 Español"
+  },
+  "error": {
+    "firebase_title": "Configuration Firebase requise",
+    "firebase_step1": "Activez Firestore et Authentication dans la console Firebase.",
+    "firebase_step2": "Ajoutez votre configuration web via window.__firebase_config ou VITE_FIREBASE_CONFIG.",
+    "firebase_step3": "Rechargez la page et consultez la console si l’erreur persiste."
+  },
+  "recipe": {
+    "generator": {
+      "title": "Générer une recette",
+      "diet_label": "Régime",
+      "diet_options": {
+        "normal": "Omnivore",
+        "vegetarian": "Végétarien",
+        "vegan": "Vegan",
+        "gluten_free": "Sans gluten"
+      },
+      "people_label": "Personnes",
+      "max_time_label": "Temps max (min)",
+      "difficulty_label": "Difficulté",
+      "difficulty_options": {
+        "easy": "Facile",
+        "medium": "Moyenne",
+        "hard": "Difficile"
+      },
+      "time_options": {
+        "15": "15 min",
+        "30": "30 min",
+        "45": "45 min",
+        "60": "60+ min"
+      },
+      "ingredient_usage_label": "Utilisation des ingrédients disponibles",
+      "ingredient_modes": {
+        "use_all": "Utiliser tous les ingrédients disponibles",
+        "use_selected": "Sélectionner certains ingrédients",
+        "ignore": "Ignorer le stock"
+      },
+      "custom_query_label": "Envie particulière ?",
+      "custom_query_placeholder": "Ex. : ‘Plat réconfortant’, ‘utiliser les courgettes’...",
+      "generate_button": "Trouver une recette",
+      "generating": "Génération..."
+    },
+    "display": {
+      "edit_mode_title": "Mode édition",
+      "fields": {
+        "title": "Titre",
+        "time": "Temps (min)",
+        "difficulty": "Difficulté",
+        "portions": "Portions",
+        "available_ingredients": "Ingrédients disponibles (un par ligne)",
+        "missing_ingredients": "Ingrédients manquants (un par ligne)",
+        "instructions": "Instructions (une par ligne)"
+      },
+      "sections": {
+        "available_ingredients": "Ingrédients disponibles",
+        "missing_ingredients": "Ingrédients manquants",
+        "instructions": "Instructions",
+        "review": "Votre avis"
+      },
+      "labels": {
+        "note": "Note :",
+        "time": "{{count}} min",
+        "difficulty": "Difficulté : {{value}}",
+        "servings": "{{count}} personne",
+        "servings_plural": "{{count}} personnes"
+      },
+      "placeholders": {
+        "personal_note": "Ajouter une note personnelle..."
+      },
+      "messages": {
+        "all_available": "Tous les ingrédients sont déjà disponibles.",
+        "nothing_missing": "Tout est dans le garde-manger !"
+      },
+      "buttons": {
+        "confirm_edit": "Valider les modifications",
+        "cancel_edit": "Annuler",
+        "add_missing": "Ajouter les {{count}} ingrédient(s) manquant(s) à la liste de courses",
+        "edit": "Modifier la recette",
+        "save": "Sauvegarder dans mes favoris",
+        "saving": "Sauvegarde..."
+      }
+    }
+  },
+  "stock": {
+    "title": "Mon Garde-Manger",
+    "form": {
+      "fields": {
+        "ingredient": "Ingrédient",
+        "quantity": "Quantité",
+        "unit": "Unité"
+      },
+      "placeholders": {
+        "ingredient": "Ex: Farine, Tomates...",
+        "quantity": "Ex: 500"
+      },
+      "aria": {
+        "ingredient": "Nouvel ingrédient",
+        "quantity": "Quantité",
+        "submit": "Ajouter l'ingrédient"
+      },
+      "units": {
+        "pieces": "pièce(s)",
+        "grams": "g",
+        "kilograms": "kg",
+        "milliliters": "ml",
+        "liters": "L",
+        "teaspoon": "c. à café",
+        "tablespoon": "c. à soupe"
+      },
+      "submit": "Ajouter au stock"
+    },
+    "empty": {
+      "title": "Votre garde-manger est vide",
+      "message": "Ajoutez vos ingrédients pour générer des recettes."
+    },
+    "toast": {
+      "add_success": "Ingrédient ajouté au garde-manger !",
+      "add_error": "Erreur d'ajout de l'ingrédient",
+      "delete_success": "Ingrédient supprimé.",
+      "delete_error": "Erreur de suppression"
+    },
+    "list": {
+      "aria": {
+        "delete": "Supprimer {{name}}"
+      }
+    }
+  },
+  "equipment": {
+    "title": "Mes Équipements",
+    "form": {
+      "placeholder": "Ex: Four, Thermomix, Wok...",
+      "aria": {
+        "input": "Nouvel équipement",
+        "submit": "Ajouter l'équipement"
+      }
+    },
+    "empty": {
+      "title": "Aucun équipement",
+      "message": "Ajoutez vos outils pour des recettes adaptées."
+    },
+    "toast": {
+      "add_success": "Équipement ajouté !",
+      "add_error": "Erreur d'ajout",
+      "delete_success": "Équipement supprimé.",
+      "delete_error": "Erreur de suppression"
+    },
+    "list": {
+      "aria": {
+        "delete": "Supprimer {{name}}"
+      }
+    }
+  },
+  "favorites": {
+    "title": "Mes Favoris",
+    "import": {
+      "cancel": "Annuler l'importation",
+      "open": "Importer une recette",
+      "placeholder": "Collez ici le texte brut de votre recette...",
+      "formatting": "Formatage IA...",
+      "submit": "Formater et Sauvegarder"
+    },
+    "empty": {
+      "title": "Aucun favori",
+      "message": "Sauvegardez vos recettes générées pour les retrouver ici."
+    },
+    "toast": {
+      "import_success": "Recette importée !",
+      "import_error": "Erreur d'importation",
+      "delete_success": "Recette supprimée.",
+      "delete_error": "Erreur de suppression",
+      "update_success": "Recette mise à jour !",
+      "update_error": "Erreur de sauvegarde"
+    },
+    "list": {
+      "aria": {
+        "delete": "Supprimer {{name}}"
+      }
+    },
+    "modal": {
+      "close": "Fermer la vue"
+    }
+  },
+  "shopping": {
+    "title": "Liste de Courses",
+    "form": {
+      "placeholder": "Ex: Lait, Pain, Tomates...",
+      "aria": {
+        "input": "Nouvel article",
+        "submit": "Ajouter à la liste"
+      }
+    },
+    "empty": {
+      "title": "Liste de courses vide",
+      "message": "Les ingrédients manquants des recettes s'ajouteront ici."
+    },
+    "toast": {
+      "add_success": "Article ajouté !",
+      "add_error": "Erreur d'ajout",
+      "delete_success": "Article supprimé.",
+      "delete_error": "Erreur de suppression",
+      "toggle_error": "Erreur de mise à jour"
+    },
+    "list": {
+      "aria": {
+        "delete": "Supprimer {{name}}"
+      }
+    }
+  },
+  "planning": {
+    "title": "Plan de la Semaine",
+    "actions": {
+      "generating": "Génération IA...",
+      "generate_button": "Générer (IA)"
+    },
+    "toast": {
+      "generated": "Planning de la semaine généré !",
+      "generate_empty": "L'IA n'a pas pu générer de planning.",
+      "generate_error": "Erreur de la génération IA."
+    },
+    "meals": {
+      "breakfast": "Petit-déjeuner",
+      "lunch": "Déjeuner",
+      "dinner": "Dîner"
+    },
+    "select": {
+      "placeholder": "-- Choisir --"
+    }
+  },
+
+  "toast": {
+    "login_success": "Connecté en tant que {{name}}",
+    "login_error": "Échec de la connexion Google",
+    "logout_success": "Déconnexion réussie",
+    "logout_error": "Erreur lors de la déconnexion",
+    "edit_saved": "Modifications enregistrées.",
+    "recipe_saved": "Recette sauvegardée !",
+    "save_error": "Erreur de sauvegarde",
+    "no_missing_ingredients": "Aucun ingrédient manquant à ajouter.",
+    "already_in_shopping_list": "Tous ces ingrédients sont déjà dans votre liste de courses.",
+    "missing_added": "{{count}} ingrédient(s) ajouté(s) à la liste de courses.",
+    "shopping_list_error": "Erreur lors de l’ajout à la liste de courses",
+    "generation_error": "Échec de la génération de recette"
+  }
 }

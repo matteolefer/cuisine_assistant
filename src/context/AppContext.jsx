@@ -18,6 +18,7 @@ import { VIEWS } from '../constants';
 import firestoreService from '../services/firestoreService';
 import useAuth from '../hooks/useAuth';
 import useFirestoreQuery from '../hooks/useFirestoreQuery';
+import { useTranslation } from 'react-i18next';
 
 // ------------------------------------------------------------
 // 🔧 Utilitaires internes
@@ -84,6 +85,27 @@ export function AppProvider({ children }) {
   const [db, setDb] = useState(null);
   const [auth, setAuth] = useState(null);
   const [initializationError, setInitializationError] = useState(null);
+  const { t, i18n } = useTranslation();
+
+  const [language, setLanguageState] = useState(() => {
+    if (typeof window !== 'undefined' && window.localStorage) {
+      return window.localStorage.getItem('culina_lang') || i18n.language || 'fr';
+    }
+    return i18n.language || 'fr';
+  });
+
+  useEffect(() => {
+    if (language && language !== i18n.language) {
+      i18n.changeLanguage(language);
+    }
+    if (typeof window !== 'undefined' && window.localStorage && language) {
+      window.localStorage.setItem('culina_lang', language);
+    }
+  }, [language, i18n]);
+
+  const setLanguage = useCallback((nextLanguage) => {
+    setLanguageState(nextLanguage);
+  }, []);
 
   // --- Initialisation Firebase ---
   useEffect(() => {
@@ -113,6 +135,17 @@ export function AppProvider({ children }) {
   // --- Authentification ---
   const { userId, isAuthReady } = useAuth(auth);
 
+  // --- Toasts ---
+  const [toasts, setToasts] = useState([]);
+
+  const addToast = useCallback((message, type = 'success') => {
+    const id = `${Date.now()}-${Math.random().toString(36).substr(2, 6)}`;
+    setToasts((prev) => [...prev, { id, message, type }]);
+    setTimeout(() => {
+      setToasts((prev) => prev.filter((toast) => toast.id !== id));
+    }, 3000);
+  }, []);
+
   // --- Connexion Google ---
   const handleGoogleLogin = useCallback(async () => {
     if (!auth) return;
@@ -120,24 +153,24 @@ export function AppProvider({ children }) {
     try {
       const result = await signInWithPopup(auth, provider);
       const user = result.user;
-      addToast(`Connecté en tant que ${user.displayName}`, 'success');
+      addToast(t('toast.login_success', { name: user.displayName }), 'success');
     } catch (error) {
       console.error('Erreur de connexion Google:', error);
-      addToast('Échec de la connexion Google', 'error');
+      addToast(t('toast.login_error'), 'error');
     }
-  }, [auth]);
+  }, [auth, addToast, t]);
 
   // --- Déconnexion ---
   const handleLogout = useCallback(async () => {
     if (!auth) return;
     try {
       await signOut(auth);
-      addToast('Déconnecté avec succès', 'success');
+      addToast(t('toast.logout_success'), 'success');
     } catch (error) {
       console.error('Erreur de déconnexion:', error);
-      addToast('Erreur lors de la déconnexion', 'error');
+      addToast(t('toast.logout_error'), 'error');
     }
-  }, [auth]);
+  }, [auth, addToast, t]);
 
   // --- Données Firestore ---
   const { data: ingredients } = useFirestoreQuery(db, appId, userId, 'ingredients_stock');
@@ -180,26 +213,8 @@ export function AppProvider({ children }) {
     [db, planPath],
   );
 
-  // --- Toasts ---
-  const [toasts, setToasts] = useState([]);
-
-  const addToast = useCallback((message, type = 'success') => {
-    const id = `${Date.now()}-${Math.random().toString(36).substr(2, 6)}`;
-    setToasts((prev) => [...prev, { id, message, type }]);
-    setTimeout(() => {
-      setToasts((prev) => prev.filter((toast) => toast.id !== id));
-    }, 3000);
-  }, []);
-
   // --- Autres états ---
   const [activeView, setActiveView] = useState(VIEWS.STOCK);
-
-    // --- Langue persistée ---
-  const [language, setLanguage] = useState(localStorage.getItem('culina_lang') || 'fr');
-
-  useEffect(() => {
-    localStorage.setItem('culina_lang', language);
-  }, [language]);
 
 
   // --- Valeur exposée ---

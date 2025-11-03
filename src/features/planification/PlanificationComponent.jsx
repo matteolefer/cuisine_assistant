@@ -1,4 +1,5 @@
 import React, { useMemo, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { useAppContext } from '../../context/AppContext';
 import geminiService from '../../services/geminiService';
 import Button from '../../components/ui/Button';
@@ -6,8 +7,20 @@ import Select from '../../components/ui/Select';
 import { icons } from '../../components/ui/icons';
 
 function PlanificationComponent() {
-  const { savedRecipes, plan, updatePlan, addToast } = useAppContext();
+  const { t } = useTranslation();
+  const { savedRecipes, plan, updatePlan, addToast, language } = useAppContext();
   const [isPlanningIA, setIsPlanningIA] = useState(false);
+
+  const locale = useMemo(() => {
+    switch (language) {
+      case 'en':
+        return 'en-US';
+      case 'es':
+        return 'es-ES';
+      default:
+        return 'fr-FR';
+    }
+  }, [language]);
 
   const weekDays = useMemo(() => {
     const days = [];
@@ -17,16 +30,16 @@ function PlanificationComponent() {
       const date = new Date(today);
       date.setDate(today.getDate() + i);
       const dateString = date.toISOString().split('T')[0];
-      days.push({ dateString, display: date.toLocaleDateString('fr-FR', options) });
+      days.push({ dateString, display: date.toLocaleDateString(locale, options) });
     }
     return days;
-  }, []);
+  }, [locale]);
 
   const mealTypes = ['petit-dejeuner', 'dejeuner', 'diner'];
   const mealLabels = {
-    'petit-dejeuner': 'Petit-déjeuner',
-    dejeuner: 'Déjeuner',
-    diner: 'Dîner',
+    'petit-dejeuner': t('planning.meals.breakfast', 'Petit-déjeuner'),
+    dejeuner: t('planning.meals.lunch', 'Déjeuner'),
+    diner: t('planning.meals.dinner', 'Dîner'),
   };
 
   const handleSelectRecipe = (dateString, mealType, recipeId) => {
@@ -51,13 +64,13 @@ function PlanificationComponent() {
       const generatedPlan = await geminiService.generateWeeklyPlan(savedRecipes, {});
       if (generatedPlan) {
         updatePlan(generatedPlan);
-        addToast('Planning de la semaine généré !');
+        addToast(t('planning.toast.generated', 'Planning de la semaine généré !'));
       } else {
-        addToast("L'IA n'a pas pu générer de planning.", 'error');
+        addToast(t('planning.toast.generate_empty', "L'IA n'a pas pu générer de planning."), 'error');
       }
     } catch (error) {
       console.error(error);
-      addToast('Erreur de la génération IA.', 'error');
+      addToast(t('planning.toast.generate_error', 'Erreur de la génération IA.'), 'error');
     } finally {
       setIsPlanningIA(false);
     }
@@ -66,13 +79,18 @@ function PlanificationComponent() {
   return (
     <div className="bg-white rounded-2xl shadow-lg p-6 md:p-8 border border-[#EAEAEA] animate-fade-in">
       <div className="flex justify-between items-center mb-6">
-        <h2 className="text-4xl font-bold text-gray-800 tracking-tight">Plan de la Semaine</h2>
+        <h2 className="text-4xl font-bold text-gray-800 tracking-tight">
+          {t('planning.title', 'Plan de la Semaine')}
+        </h2>
         <Button onClick={handleAutoPlan} variant="primary" className="w-auto px-4" disabled={isPlanningIA}>
-          {isPlanningIA ? 'Génération IA...' : (
-            <>
-              <icons.Recettes className="w-5 h-5 inline mr-2" /> Générer (IA)
-            </>
-          )}
+          {isPlanningIA
+            ? t('planning.actions.generating', 'Génération IA...')
+            : (
+              <>
+                <icons.Recettes className="w-5 h-5 inline mr-2" />
+                {t('planning.actions.generate_button', 'Générer (IA)')}
+              </>
+            )}
         </Button>
       </div>
 
@@ -90,7 +108,7 @@ function PlanificationComponent() {
                     value={plan[day.dateString]?.[meal]?.id || ''}
                     onChange={(event) => handleSelectRecipe(day.dateString, meal, event.target.value)}
                   >
-                    <option value="">-- Choisir --</option>
+                    <option value="">{t('planning.select.placeholder', '-- Choisir --')}</option>
                     {savedRecipes.map((recipe) => (
                       <option key={recipe.id} value={recipe.id}>
                         {recipe.titre}
