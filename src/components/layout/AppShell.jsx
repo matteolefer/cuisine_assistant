@@ -2,6 +2,7 @@ import React from 'react';
 import { useAppContext } from '../../context/AppContext';
 import { VIEWS } from '../../constants';
 import { featureComponents } from '../../features';
+import Button from '../ui/Button';
 import GeneratingLoader from '../ui/GeneratingLoader';
 import Toaster from '../ui/Toaster';
 import { icons } from '../ui/icons';
@@ -88,9 +89,11 @@ function AppShell() {
         <p className="italic text-lg text-sage mb-10">
           {t('app.subtitle', 'Cook simply, feel inspired')}
         </p>
-        <button
+        <Button
           onClick={handleGoogleLogin}
-          className="flex items-center bg-white text-[#444] border border-gray-300 rounded-lg shadow-md px-6 py-3 hover:bg-gray-50 transition-all"
+          variant="secondary"
+          className="w-auto flex items-center px-6 py-3 text-[#444] border-gray-300 shadow-md"
+          aria-label={t('auth.login_google', 'Se connecter avec Google')}
         >
           <img
             src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg"
@@ -100,7 +103,7 @@ function AppShell() {
           <span className="text-lg font-medium">
             {t('auth.login_google', 'Se connecter avec Google')}
           </span>
-        </button>
+        </Button>
         <p className="mt-6 text-sm text-gray-500">
           {t(
             'auth.notice',
@@ -145,30 +148,35 @@ function AppShell() {
           </select>
 
           {/* Bouton Logout */}
-          <button
+          <Button
             onClick={handleLogout}
-            className="flex items-center bg-[#627E63] text-white font-medium px-5 py-2 rounded-full shadow-md hover:bg-[#506C52] transition-all"
+            variant="primary"
+            className="w-auto flex items-center px-5 py-2 rounded-full shadow-md"
+            aria-label={t('app.logout', 'Déconnexion')}
           >
             <icons.Logout className="w-5 h-5 mr-2" />
             {t('app.logout', 'Déconnexion')}
-          </button>
+          </Button>
         </div>
       </header>
 
       {/* ===== NAVIGATION ===== */}
       <nav className="flex justify-center flex-wrap gap-3 bg-[#F9F6F2] py-3 border-b border-[#EDE6DD] shadow-sm">
         {Object.values(VIEWS).map((viewKey) => (
-          <button
+          <Button
             key={viewKey}
             onClick={() => setActiveView(viewKey)}
-            className={`px-4 py-2 rounded-full font-medium transition-all duration-300 ${
+            variant={activeView === viewKey ? 'primary' : 'ghost'}
+            className={`w-auto px-4 py-2 rounded-full font-medium ${
               activeView === viewKey
-                ? 'bg-[#627E63] text-white shadow-md'
+                ? 'shadow-md'
                 : 'bg-white text-[#627E63] hover:bg-[#DFF6E3]'
             }`}
+            aria-pressed={activeView === viewKey}
+            aria-label={t(`app.views.${viewKey}`, formatViewLabel(viewKey))}
           >
             {t(`app.views.${viewKey}`, formatViewLabel(viewKey))}
-          </button>
+          </Button>
         ))}
       </nav>
 

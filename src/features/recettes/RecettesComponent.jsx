@@ -469,16 +469,24 @@ function RecettesComponent() {
                 const name = ing.name || ing;
                 const isSelected = selectedIngredients.includes(name);
                 return (
-                  <button
+                  <Button
                     type="button"
                     key={index}
                     onClick={() => toggleIngredientSelection(name)}
-                    className={`px-3 py-1 rounded-full text-sm ${
-                      isSelected ? 'bg-green-600 text-white' : 'bg-gray-200 hover:bg-gray-300'
+                    variant={isSelected ? 'primary' : 'ghost'}
+                    className={`w-auto px-3 py-1 rounded-full text-sm ${
+                      isSelected
+                        ? '!bg-green-600 hover:!bg-green-700'
+                        : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
                     }`}
+                    aria-pressed={isSelected}
+                    aria-label={t('recipe.generator.ingredient_toggle', {
+                      name,
+                      defaultValue: `Basculer ${name}`,
+                    })}
                   >
                     {name}
-                  </button>
+                  </Button>
                 );
               })}
             </div>

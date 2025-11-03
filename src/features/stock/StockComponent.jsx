@@ -216,6 +216,44 @@ function StockComponent() {
               </div>
             );
           })}
+
+          {Object.entries(groupedIngredients).map(([category, items]) => (
+            <div key={category} className="mb-6">
+              {/* 🏷️ Titre de catégorie avec emoji */}
+              <h3 className="text-2xl font-semibold text-green-700 flex items-center mb-3">
+                <span className="text-2xl mr-2">{categoryIcons[category] || '📦'}</span>
+                {category}
+              </h3>
+
+              {/* Liste des ingrédients */}
+              <ul className="space-y-3">
+                {items.map((item) => (
+                  <li
+                    key={item.id}
+                    className="bg-white p-4 rounded-xl shadow border border-gray-100 flex justify-between items-center transition hover:shadow-lg"
+                  >
+                    <p className="text-lg font-medium text-gray-800 flex-grow">
+                      {item.name}
+                      {(item.quantity > 0 || (item.unit && item.unit !== 'pièce(s)')) && (
+                        <span className="text-sm text-gray-500 font-normal ml-2">
+                          ({item.quantity} {item.unit})
+                        </span>
+                      )}
+                    </p>
+                    <Button
+                      onClick={() => handleDelete(item.id)}
+                      variant="ghost-danger"
+                      type="button"
+                      className="p-2 ml-4 text-red-500 hover:text-red-600 rounded-full w-auto h-auto focus-visible:ring-red-500"
+                      aria-label={t('stock.list.aria.delete', { name: item.name, defaultValue: `Supprimer ${item.name}` })}
+                    >
+                      <icons.Trash className="w-5 h-5" />
+                    </Button>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          ))}
         </div>
       )}
     </div>

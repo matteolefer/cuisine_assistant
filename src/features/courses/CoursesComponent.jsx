@@ -2,7 +2,9 @@ import React, { useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useAppContext } from '../../context/AppContext';
 import firestoreService from '../../services/firestoreService';
+import Button from '../../components/ui/Button';
 import EmptyState from '../../components/ui/EmptyState';
+import Input from '../../components/ui/Input';
 import { icons } from '../../components/ui/icons';
 import {
   CATEGORY_EMOJIS,
@@ -68,21 +70,22 @@ function CoursesComponent() {
 
       <form onSubmit={handleAdd} className="w-full mb-6">
         <div className="flex shadow-md rounded-xl overflow-hidden bg-white border border-gray-200">
-          <input
+          <Input
             type="text"
-            className="flex-grow p-4 text-gray-700 focus:ring-green-500 focus:border-green-500 border-none transition"
+            className="flex-grow border-none p-4 text-gray-700"
             placeholder={t('shopping.form.placeholder', 'Ex: Lait, Pain, Tomates...')}
             value={newItemName}
             onChange={(event) => setNewItemName(event.target.value)}
             aria-label={t('shopping.form.aria.input', 'Nouvel article')}
           />
-          <button
+          <Button
             type="submit"
-            className="bg-green-600 text-white p-4 hover:bg-green-700 transition flex items-center justify-center"
+            variant="primary"
+            className="w-auto rounded-none rounded-r-xl p-4 flex items-center justify-center"
             aria-label={t('shopping.form.aria.submit', 'Ajouter à la liste')}
           >
             <icons.Plus className="w-6 h-6" />
-          </button>
+          </Button>
         </div>
       </form>
 
@@ -154,6 +157,44 @@ function CoursesComponent() {
               </div>
             );
           })
+            <ul className="space-y-3">
+              {items.map((item) => (
+                <li
+                  key={item.id}
+                  className="bg-white p-4 rounded-xl shadow border border-gray-100 flex items-center justify-between transition hover:shadow-lg"
+                >
+                  <div className="flex items-center space-x-3">
+                    <input
+                      type="checkbox"
+                      checked={item.purchased}
+                      onChange={() => handleToggle(item.id, item.purchased)}
+                      className="w-5 h-5 text-green-600 rounded focus:ring-green-500"
+                      aria-label={t('shopping.list.aria.toggle', {
+                        name: item.name,
+                        defaultValue: `Marquer ${item.name} comme acheté`,
+                      })}
+                    />
+                    <span className={`text-lg font-medium ${item.purchased ? 'line-through text-gray-400' : 'text-gray-800'}`}>
+                      {item.name}
+                    </span>
+                  </div>
+                  <Button
+                    onClick={() => handleDelete(item.id)}
+                    variant="ghost-danger"
+                    type="button"
+                    className="p-2 text-red-500 hover:text-red-600 rounded-full w-auto h-auto focus-visible:ring-red-500"
+                    aria-label={t('shopping.list.aria.delete', {
+                      name: item.name,
+                      defaultValue: `Supprimer ${item.name}`,
+                    })}
+                  >
+                    <icons.Trash className="w-5 h-5" />
+                  </Button>
+                </li>
+              ))}
+            </ul>
+          </div>
+        ))
       )}
     </div>
   );
