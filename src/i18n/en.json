@@ -22,6 +22,18 @@
     "en": "🇬🇧 English",
     "es": "🇪🇸 Spanish"
   },
+  "categories": {
+    "fruits": "Fruits",
+    "vegetables": "Vegetables",
+    "meats": "Meats",
+    "fish": "Fish",
+    "dairy": "Dairy",
+    "bakery": "Bakery",
+    "grocery": "Pantry",
+    "beverages": "Beverages",
+    "frozen": "Frozen",
+    "other": "Other"
+  },
   "error": {
     "firebase_title": "Firebase configuration required",
     "firebase_step1": "Enable Firestore and Authentication in the Firebase console.",

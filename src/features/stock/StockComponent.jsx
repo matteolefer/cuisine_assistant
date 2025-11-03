@@ -8,27 +8,20 @@ import Input from '../../components/ui/Input';
 import Select from '../../components/ui/Select';
 import EmptyState from '../../components/ui/EmptyState';
 import { icons } from '../../components/ui/icons';
+import {
+  CATEGORY_EMOJIS,
+  DEFAULT_CATEGORY_KEY,
+  canonicalizeCategory,
+} from '../../constants/categories';
 
 function StockComponent() {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const { db, userId, appId, ingredients, addToast } = useAppContext();
   const [newItemName, setNewItemName] = useState('');
   const [newItemQty, setNewItemQty] = useState('');
   const [newItemUnit, setNewItemUnit] = useState('pièce(s)');
 
-  // 🧩 Ajout du mapping emoji/catégorie (identique à la liste de courses)
-  const categoryIcons = {
-    'Fruits': '🍎',
-    'Légumes': '🥦',
-    'Viandes': '🍖',
-    'Poissons': '🐟',
-    'Produits Laitiers': '🥛',
-    'Boulangerie': '🥖',
-    'Épicerie': '🛒',
-    'Boissons': '🥤',
-    'Surgelés': '🧊',
-    'Autre': '📦',
-  };
+  const fallbackCategoryLabel = t('categories.other', 'Autre');
 
   // 🟩 Ajouter un ingrédient au stock
   const handleAdd = async (event) => {
@@ -37,7 +30,10 @@ function StockComponent() {
 
     try {
       const path = `artifacts/${appId}/users/${userId}/ingredients_stock`;
-      const category = await geminiService.categorizeIngredient(newItemName.trim());
+      const category = await geminiService.categorizeIngredient(
+        newItemName.trim(),
+        i18n.language,
+      );
 
       const newItem = {
         name: newItemName.trim(),
@@ -73,7 +69,7 @@ function StockComponent() {
   // 🧠 Regroupement par catégorie (comme CoursesComponent)
   const groupedIngredients = useMemo(() => {
     const groups = ingredients.reduce((acc, item) => {
-      const category = item.category || 'Autre';
+      const category = canonicalizeCategory(item.category);
       if (!acc[category]) acc[category] = [];
       acc[category].push(item);
       return acc;
@@ -81,12 +77,16 @@ function StockComponent() {
 
     // Trie les catégories par ordre alphabétique
     return Object.keys(groups)
-      .sort()
+      .sort((a, b) => {
+        const labelA = t(`categories.${a}`, fallbackCategoryLabel);
+        const labelB = t(`categories.${b}`, fallbackCategoryLabel);
+        return labelA.localeCompare(labelB);
+      })
       .reduce((acc, key) => {
         acc[key] = groups[key];
         return acc;
       }, {});
-  }, [ingredients]);
+  }, [fallbackCategoryLabel, ingredients, t]);
 
   return (
     <div className="bg-white rounded-2xl shadow-lg p-6 md:p-8 border border-[#EAEAEA] animate-fade-in">
@@ -161,41 +161,46 @@ function StockComponent() {
         />
       ) : (
         <div className="space-y-6">
-          {Object.entries(groupedIngredients).map(([category, items]) => (
-            <div key={category} className="mb-6">
-              {/* 🏷️ Titre de catégorie avec emoji */}
-              <h3 className="text-2xl font-semibold text-green-700 flex items-center mb-3">
-                <span className="text-2xl mr-2">{categoryIcons[category] || '📦'}</span>
-                {category}
-              </h3>
+          {Object.entries(groupedIngredients).map(([category, items]) => {
+            const emoji = CATEGORY_EMOJIS[category] || CATEGORY_EMOJIS[DEFAULT_CATEGORY_KEY];
+            const label = t(`categories.${category}`, fallbackCategoryLabel);
 
-              {/* Liste des ingrédients */}
-              <ul className="space-y-3">
-                {items.map((item) => (
-                  <li
-                    key={item.id}
-                    className="bg-white p-4 rounded-xl shadow border border-gray-100 flex justify-between items-center transition hover:shadow-lg"
-                  >
-                    <p className="text-lg font-medium text-gray-800 flex-grow">
-                      {item.name}
-                      {(item.quantity > 0 || (item.unit && item.unit !== 'pièce(s)')) && (
-                        <span className="text-sm text-gray-500 font-normal ml-2">
-                          ({item.quantity} {item.unit})
-                        </span>
-                      )}
-                    </p>
-                    <button
-                      onClick={() => handleDelete(item.id)}
-                      className="p-2 ml-4 text-red-500 hover:bg-red-100 rounded-full transition"
-                      aria-label={t('stock.list.aria.delete', { name: item.name, defaultValue: `Supprimer ${item.name}` })}
+            return (
+              <div key={category} className="mb-6">
+                {/* 🏷️ Titre de catégorie avec emoji */}
+                <h3 className="text-2xl font-semibold text-green-700 flex items-center mb-3">
+                  <span className="text-2xl mr-2">{emoji}</span>
+                  {label}
+                </h3>
+
+                {/* Liste des ingrédients */}
+                <ul className="space-y-3">
+                  {items.map((item) => (
+                    <li
+                      key={item.id}
+                      className="bg-white p-4 rounded-xl shadow border border-gray-100 flex justify-between items-center transition hover:shadow-lg"
                     >
-                      <icons.Trash className="w-5 h-5" />
-                    </button>
-                  </li>
-                ))}
-              </ul>
-            </div>
-          ))}
+                      <p className="text-lg font-medium text-gray-800 flex-grow">
+                        {item.name}
+                        {(item.quantity > 0 || (item.unit && item.unit !== 'pièce(s)')) && (
+                          <span className="text-sm text-gray-500 font-normal ml-2">
+                            ({item.quantity} {item.unit})
+                          </span>
+                        )}
+                      </p>
+                      <button
+                        onClick={() => handleDelete(item.id)}
+                        className="p-2 ml-4 text-red-500 hover:bg-red-100 rounded-full transition"
+                        aria-label={t('stock.list.aria.delete', { name: item.name, defaultValue: `Supprimer ${item.name}` })}
+                      >
+                        <icons.Trash className="w-5 h-5" />
+                      </button>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            );
+          })}
         </div>
       )}
     </div>

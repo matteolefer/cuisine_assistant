@@ -22,6 +22,18 @@
     "en": "🇬🇧 English",
     "es": "🇪🇸 Español"
   },
+  "categories": {
+    "fruits": "Fruits",
+    "vegetables": "Légumes",
+    "meats": "Viandes",
+    "fish": "Poissons",
+    "dairy": "Produits laitiers",
+    "bakery": "Boulangerie",
+    "grocery": "Épicerie",
+    "beverages": "Boissons",
+    "frozen": "Surgelés",
+    "other": "Autre"
+  },
   "error": {
     "firebase_title": "Configuration Firebase requise",
     "firebase_step1": "Activez Firestore et Authentication dans la console Firebase.",
