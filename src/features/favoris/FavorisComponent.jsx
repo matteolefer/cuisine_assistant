@@ -10,7 +10,7 @@ import { RecipeDisplay } from '../recettes/RecettesComponent';
 
 function FavorisComponent() {
   const { t } = useTranslation();
-  const { db, userId, appId, addToast, savedRecipes } = useAppContext();
+  const { db, userId, appId, addToast, savedRecipes, language } = useAppContext();
   const [isImporting, setIsImporting] = useState(false);
   const [importText, setImportText] = useState('');
   const [isFormatting, setIsFormatting] = useState(false);
@@ -22,9 +22,47 @@ function FavorisComponent() {
     setIsFormatting(true);
 
     try {
-      const formattedRecipe = await geminiService.formatImportedRecipe(importText);
+      const trimmed = importText.trim();
+      const aiRecipe = await geminiService.formatImportedRecipe(trimmed, { language });
+      const [firstLine, ...restLines] = trimmed.split(/\n+/);
+      const fallbackTitle = firstLine || t('favorites.import.fallback_title', 'Recette importée (brouillon)');
+      const fallbackInstructions = restLines.length > 0 ? restLines : [trimmed];
+
+      const recipeToSave = {
+        titre: aiRecipe?.titre || fallbackTitle,
+        description: aiRecipe?.description || restLines.join('\n') || trimmed,
+        type_plat: aiRecipe?.type_plat || '',
+        difficulte: aiRecipe?.difficulte || '',
+        temps_preparation_minutes: Number.parseInt(aiRecipe?.temps_preparation_minutes, 10) || 0,
+        portions: Number.parseInt(aiRecipe?.portions, 10) || 0,
+        ingredients_utilises: Array.isArray(aiRecipe?.ingredients_utilises)
+          ? aiRecipe.ingredients_utilises
+          : [],
+        ingredients_manquants: Array.isArray(aiRecipe?.ingredients_manquants)
+          ? aiRecipe.ingredients_manquants
+          : [],
+        instructions: Array.isArray(aiRecipe?.instructions) && aiRecipe.instructions.length > 0
+          ? aiRecipe.instructions
+          : fallbackInstructions,
+        valeurs_nutritionnelles: {
+          calories: aiRecipe?.valeurs_nutritionnelles?.calories || '',
+          proteines: aiRecipe?.valeurs_nutritionnelles?.proteines || '',
+          glucides: aiRecipe?.valeurs_nutritionnelles?.glucides || '',
+          lipides: aiRecipe?.valeurs_nutritionnelles?.lipides || '',
+        },
+      };
+
+      const usedFallback = !aiRecipe || !aiRecipe.titre;
+
+      if (usedFallback) {
+        addToast(
+          t('favorites.toast.import_fallback', 'Formatage IA indisponible, brouillon enregistré.'),
+          'warning',
+        );
+      }
+
       const path = `artifacts/${appId}/users/${userId}/saved_recipes`;
-      await firestoreService.addItem(db, path, formattedRecipe);
+      await firestoreService.addItem(db, path, recipeToSave);
 
       addToast(t('favorites.toast.import_success', 'Recette importée !'));
       setIsImporting(false);
@@ -124,8 +162,9 @@ function FavorisComponent() {
               </div>
               <Button
                 onClick={() => handleDelete(recipe.id)}
-                variant="danger"
-                className="p-2 ml-4 w-auto h-auto !bg-transparent !text-red-500 hover:!bg-red-100 rounded-full"
+                variant="ghost-danger"
+                type="button"
+                className="p-2 ml-4 w-auto h-auto rounded-full focus-visible:ring-red-500"
                 aria-label={t('favorites.list.aria.delete', {
                   name: recipe.titre,
                   defaultValue: `Supprimer ${recipe.titre}`,
@@ -141,13 +180,17 @@ function FavorisComponent() {
       {viewRecipe && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-40 overflow-auto">
           <div className="relative w-full max-w-2xl max-h-[90vh] overflow-auto no-scrollbar">
-            <button
+            <Button
               onClick={() => setViewRecipe(null)}
-              className="absolute -top-2 -right-2 text-gray-700 bg-white rounded-full p-2 z-10 shadow"
+              variant="plain"
+              type="button"
+              className="absolute -top-2 -right-2 text-gray-700 bg-white rounded-full p-2 z-10 shadow w-auto h-auto"
               aria-label={t('favorites.modal.close', 'Fermer la vue')}
             >
               <Icons.Close className="w-6 h-6" />
             </button>
+              <icons.Close className="w-6 h-6" />
+            </Button>
             <RecipeDisplay recipe={viewRecipe} onSave={handleSave} />
           </div>
         </div>

@@ -77,9 +77,11 @@ function EquipementComponent() {
               className="bg-white p-4 rounded-xl shadow border border-gray-100 flex justify-between items-center transition hover:shadow-lg"
             >
               <p className="text-lg font-medium text-gray-800 flex-grow">{item.name}</p>
-              <button
+              <Button
                 onClick={() => handleDelete(item.id)}
-                className="p-2 ml-4 text-red-500 hover:bg-red-100 rounded-full transition"
+                variant="ghost-danger"
+                type="button"
+                className="p-2 ml-4 text-red-500 hover:text-red-600 rounded-full w-auto h-auto focus-visible:ring-red-500"
                 aria-label={t('equipment.list.aria.delete', {
                   name: item.name,
                   defaultValue: `Supprimer ${item.name}`,
@@ -87,6 +89,8 @@ function EquipementComponent() {
               >
                 <Icons.Trash className="w-5 h-5" />
               </button>
+                <icons.Trash className="w-5 h-5" />
+              </Button>
             </li>
           ))}
         </ul>

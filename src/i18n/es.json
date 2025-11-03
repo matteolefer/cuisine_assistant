@@ -22,6 +22,18 @@
     "en": "🇬🇧 Inglés",
     "es": "🇪🇸 Español"
   },
+  "categories": {
+    "fruits": "Frutas",
+    "vegetables": "Verduras",
+    "meats": "Carnes",
+    "fish": "Pescados",
+    "dairy": "Lácteos",
+    "bakery": "Panadería",
+    "grocery": "Despensa",
+    "beverages": "Bebidas",
+    "frozen": "Congelados",
+    "other": "Otro"
+  },
   "error": {
     "firebase_title": "Configuración de Firebase requerida",
     "firebase_step1": "Habilita Firestore y Authentication en la consola de Firebase.",
@@ -180,7 +192,8 @@
       "open": "Importar una receta",
       "placeholder": "Pega aquí el texto de tu receta...",
       "formatting": "Formateando con IA...",
-      "submit": "Formatear y Guardar"
+      "submit": "Formatear y Guardar",
+      "fallback_title": "Receta importada (borrador)"
     },
     "empty": {
       "title": "Sin favoritos",
@@ -189,6 +202,7 @@
     "toast": {
       "import_success": "¡Receta importada!",
       "import_error": "Error de importación",
+      "import_fallback": "Formateo IA no disponible, borrador guardado.",
       "delete_success": "Receta eliminada.",
       "delete_error": "Error al eliminar",
       "update_success": "¡Receta actualizada!",
@@ -238,7 +252,10 @@
     "toast": {
       "generated": "¡Plan semanal generado!",
       "generate_empty": "La IA no pudo generar un plan.",
-      "generate_error": "Error al generar con IA."
+      "generate_error": "Error al generar con IA.",
+      "generate_invalid": "El plan generado está incompleto.",
+      "generate_no_recipes": "Añade al menos una receta favorita antes de planificar.",
+      "generate_partial": "Algunas sugerencias se ajustaron automáticamente."
     },
     "meals": {
       "breakfast": "Desayuno",
@@ -262,6 +279,7 @@
     "already_in_shopping_list": "Estos ingredientes ya están en tu lista de compras.",
     "missing_added": "{{count}} ingrediente(s) añadido(s) a la lista de compras.",
     "shopping_list_error": "Error al añadir a la lista de compras",
-    "generation_error": "Error al generar la receta"
+    "generation_error": "Error al generar la receta",
+    "categorize_fallback": "Categoría IA no disponible para {{name}}: se usa \"Autre\" (Otro)."
   }
 }

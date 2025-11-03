@@ -22,6 +22,18 @@
     "en": "🇬🇧 English",
     "es": "🇪🇸 Spanish"
   },
+  "categories": {
+    "fruits": "Fruits",
+    "vegetables": "Vegetables",
+    "meats": "Meats",
+    "fish": "Fish",
+    "dairy": "Dairy",
+    "bakery": "Bakery",
+    "grocery": "Pantry",
+    "beverages": "Beverages",
+    "frozen": "Frozen",
+    "other": "Other"
+  },
   "error": {
     "firebase_title": "Firebase configuration required",
     "firebase_step1": "Enable Firestore and Authentication in the Firebase console.",
@@ -180,7 +192,8 @@
       "open": "Import a recipe",
       "placeholder": "Paste your raw recipe text here...",
       "formatting": "Formatting with AI...",
-      "submit": "Format and Save"
+      "submit": "Format and Save",
+      "fallback_title": "Imported recipe (draft)"
     },
     "empty": {
       "title": "No favorites",
@@ -189,6 +202,7 @@
     "toast": {
       "import_success": "Recipe imported!",
       "import_error": "Import error",
+      "import_fallback": "AI formatting unavailable, saved a draft.",
       "delete_success": "Recipe removed.",
       "delete_error": "Error removing",
       "update_success": "Recipe updated!",
@@ -238,7 +252,10 @@
     "toast": {
       "generated": "Weekly plan created!",
       "generate_empty": "AI couldn't generate a plan.",
-      "generate_error": "AI planning error."
+      "generate_error": "AI planning error.",
+      "generate_invalid": "The generated plan was incomplete.",
+      "generate_no_recipes": "Add at least one favourite recipe before planning.",
+      "generate_partial": "Some suggestions were adjusted automatically."
     },
     "meals": {
       "breakfast": "Breakfast",
@@ -262,6 +279,7 @@
     "already_in_shopping_list": "These ingredients are already on your shopping list.",
     "missing_added": "{{count}} ingredient(s) added to the shopping list.",
     "shopping_list_error": "Error while adding to the shopping list",
-    "generation_error": "Recipe generation failed"
+    "generation_error": "Recipe generation failed",
+    "categorize_fallback": "Could not categorise {{name}} with AI; using \"Autre\" (Other)."
   }
 }

@@ -1,16 +1,6 @@
-import {
-  collection,
-  addDoc,
-  onSnapshot,
-  deleteDoc,
-  doc,
-  serverTimestamp,
-  query,
-  updateDoc,
-  setDoc,
-} from 'firebase/firestore';
+import * as firestore from './firebaseFirestore.js';
 
-export const firestoreService = {
+export const createFirestoreService = (deps = firestore) => ({
   listenToCollection: (db, path, callback) => {
     if (!db) {
       throw new Error('Firestore non initialisé : impossible de lire la collection.');
@@ -21,8 +11,8 @@ export const firestoreService = {
       return () => {};
     }
 
-    const q = query(collection(db, path));
-    return onSnapshot(
+    const q = deps.query(deps.collection(db, path));
+    return deps.onSnapshot(
       q,
       (snapshot) => {
         const data = snapshot.docs.map((item) => ({ id: item.id, ...item.data() }));
@@ -34,6 +24,19 @@ export const firestoreService = {
     );
   },
 
+  getItems: async (db, path) => {
+    if (!db) {
+      throw new Error('Firestore non initialisé : impossible de lire la collection.');
+    }
+
+    if (!path) {
+      return [];
+    }
+
+    const snapshot = await deps.getDocs(deps.collection(db, path));
+    return snapshot.docs.map((item) => ({ id: item.id, ...item.data() }));
+  },
+
   addItem: async (db, path, data) => {
     if (!db) {
       throw new Error('Firestore non initialisé : impossible de créer le document.');
@@ -43,9 +46,9 @@ export const firestoreService = {
       throw new Error('Chemin Firestore manquant pour la création de document.');
     }
 
-    return addDoc(collection(db, path), {
+    return deps.addDoc(deps.collection(db, path), {
       ...data,
-      createdAt: serverTimestamp(),
+      createdAt: deps.serverTimestamp(),
     });
   },
 
@@ -58,7 +61,7 @@ export const firestoreService = {
       throw new Error('Chemin Firestore manquant pour la suppression.');
     }
 
-    return deleteDoc(doc(db, path));
+    return deps.deleteDoc(deps.doc(db, path));
   },
 
   updateItem: async (db, path, data) => {
@@ -70,7 +73,7 @@ export const firestoreService = {
       throw new Error('Chemin Firestore manquant pour la mise à jour.');
     }
 
-    return updateDoc(doc(db, path), data);
+    return deps.updateDoc(deps.doc(db, path), data);
   },
 
   setItem: async (db, path, data) => {
@@ -82,8 +85,10 @@ export const firestoreService = {
       throw new Error('Chemin Firestore manquant pour la sauvegarde.');
     }
 
-    return setDoc(doc(db, path), data, { merge: true });
+    return deps.setDoc(deps.doc(db, path), data, { merge: true });
   },
-};
+});
+
+export const firestoreService = createFirestoreService();
 
 export default firestoreService;
