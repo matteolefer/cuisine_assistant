@@ -1,23 +1,121 @@
 {
-  "title": "Generar una Receta",
-  "diet": "Dieta",
-  "normal": "Normal",
-  "vegetarian": "Vegetariana",
-  "vegan": "Vegana",
-  "gluten_free": "Sin gluten",
-  "people": "Personas",
-  "max_time": "Tiempo Máx (min)",
-  "difficulty": "Dificultad",
-  "easy": "Fácil",
-  "medium": "Media",
-  "hard": "Difícil",
-  "ingredient_usage": "Uso de ingredientes disponibles",
-  "use_all": "Usar todos los ingredientes disponibles",
-  "use_selected": "Seleccionar algunos ingredientes",
-  "ignore": "Ignorar la despensa",
-  "custom_query": "¿Antojo especial?",
-  "placeholder_query": "Ej: 'Comida reconfortante', 'usar calabacines'...",
-  "generate_button": "Buscar una receta",
-  "generating": "Generando...",
-  "generation_failed": "Error al generar la receta"
+  "app": {
+    "title": "Culina",
+    "subtitle": "Cocina simplemente, siéntete inspirado",
+    "logout": "Cerrar sesión",
+    "made_with": "Hecho con ❤️ y React",
+    "views": {
+      "stock": "Despensa",
+      "equipement": "Equipamiento",
+      "recettes": "Recetas",
+      "favoris": "Favoritos",
+      "courses": "Compras",
+      "planification": "Planificación"
+    }
+  },
+  "auth": {
+    "login_google": "Iniciar sesión con Google",
+    "notice": "Tu cuenta de Google solo se usa para el acceso seguro y la sincronización de tus recetas."
+  },
+  "language": {
+    "fr": "🇫🇷 Francés",
+    "en": "🇬🇧 Inglés",
+    "es": "🇪🇸 Español"
+  },
+  "error": {
+    "firebase_title": "Configuración de Firebase requerida",
+    "firebase_step1": "Habilita Firestore y Authentication en la consola de Firebase.",
+    "firebase_step2": "Proporciona tu configuración web mediante window.__firebase_config o VITE_FIREBASE_CONFIG.",
+    "firebase_step3": "Recarga la página y revisa la consola si el error persiste."
+  },
+  "recipe": {
+    "generator": {
+      "title": "Generar una receta",
+      "diet_label": "Dieta",
+      "diet_options": {
+        "normal": "Omnívora",
+        "vegetarian": "Vegetariana",
+        "vegan": "Vegana",
+        "gluten_free": "Sin gluten"
+      },
+      "people_label": "Porciones",
+      "max_time_label": "Tiempo máx (min)",
+      "difficulty_label": "Dificultad",
+      "difficulty_options": {
+        "easy": "Fácil",
+        "medium": "Media",
+        "hard": "Difícil"
+      },
+      "time_options": {
+        "15": "15 min",
+        "30": "30 min",
+        "45": "45 min",
+        "60": "60+ min"
+      },
+      "ingredient_usage_label": "Uso de ingredientes",
+      "ingredient_modes": {
+        "use_all": "Usar todos los ingredientes disponibles",
+        "use_selected": "Seleccionar algunos ingredientes",
+        "ignore": "Ignorar la despensa"
+      },
+      "custom_query_label": "¿Antojo especial?",
+      "custom_query_placeholder": "Ej. ‘Comida reconfortante’, ‘usar calabacines’...",
+      "generate_button": "Buscar una receta",
+      "generating": "Generando..."
+    },
+    "display": {
+      "edit_mode_title": "Modo edición",
+      "fields": {
+        "title": "Título",
+        "time": "Tiempo (min)",
+        "difficulty": "Dificultad",
+        "portions": "Porciones",
+        "available_ingredients": "Ingredientes disponibles (uno por línea)",
+        "missing_ingredients": "Ingredientes faltantes (uno por línea)",
+        "instructions": "Instrucciones (una por línea)"
+      },
+      "sections": {
+        "available_ingredients": "Ingredientes disponibles",
+        "missing_ingredients": "Ingredientes faltantes",
+        "instructions": "Instrucciones",
+        "review": "Tu opinión"
+      },
+      "labels": {
+        "note": "Nota:",
+        "time": "{{count}} min",
+        "difficulty": "Dificultad: {{value}}",
+        "servings": "{{count}} persona",
+        "servings_plural": "{{count}} personas"
+      },
+      "placeholders": {
+        "personal_note": "Añade una nota personal..."
+      },
+      "messages": {
+        "all_available": "Todos los ingredientes ya están disponibles.",
+        "nothing_missing": "¡Todo está en tu despensa!"
+      },
+      "buttons": {
+        "confirm_edit": "Guardar cambios",
+        "cancel_edit": "Cancelar",
+        "add_missing": "Añadir {{count}} ingrediente(s) faltante(s) a la lista de compras",
+        "edit": "Editar receta",
+        "save": "Guardar en favoritos",
+        "saving": "Guardando..."
+      }
+    }
+  },
+  "toast": {
+    "login_success": "Conectado como {{name}}",
+    "login_error": "Error al iniciar sesión con Google",
+    "logout_success": "Sesión cerrada correctamente",
+    "logout_error": "Error al cerrar sesión",
+    "edit_saved": "Cambios guardados.",
+    "recipe_saved": "¡Receta guardada!",
+    "save_error": "Error al guardar",
+    "no_missing_ingredients": "No hay ingredientes faltantes que añadir.",
+    "already_in_shopping_list": "Estos ingredientes ya están en tu lista de compras.",
+    "missing_added": "{{count}} ingrediente(s) añadido(s) a la lista de compras.",
+    "shopping_list_error": "Error al añadir a la lista de compras",
+    "generation_error": "Error al generar la receta"
+  }
 }
