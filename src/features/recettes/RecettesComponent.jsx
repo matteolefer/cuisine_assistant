@@ -76,6 +76,10 @@ export function RecipeDisplay({ recipe: initialRecipe, onSave, isEditing: startE
     }
 
     try {
+      if (!db || !userId || !appId) {
+        throw new Error('Firestore non initialisé ou informations utilisateur manquantes.');
+      }
+
       const path = `artifacts/${appId}/users/${userId}/shopping_list`;
       const existingItems = await firestoreService.getItems(db, path);
       const existingNames = existingItems.map((item) => item.name.toLowerCase());
