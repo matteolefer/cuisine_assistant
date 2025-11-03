@@ -9,6 +9,8 @@ import Select from '../../components/ui/Select';
 import StarRating from '../../components/ui/StarRating';
 import GeneratingLoader from '../../components/ui/GeneratingLoader';
 import { icons } from '../../components/ui/icons';
+import { useTranslation } from 'react-i18next'; // 🟢 Ajoute ceci tout en haut
+
 
 export function RecipeDisplay({ recipe: initialRecipe, onSave, isEditing: startEditing = false }) {
   const { db, userId, appId, addToast, setActiveView } = useAppContext();
@@ -276,6 +278,7 @@ export function RecipeDisplay({ recipe: initialRecipe, onSave, isEditing: startE
 
 function RecettesComponent() {
   const { db, userId, appId, addToast, ingredients, equipments } = useAppContext();
+  const { i18n } = useTranslation();
   const [diet, setDiet] = useState('Normal');
   const [servings, setServings] = useState(2);
   const [time, setTime] = useState('30');
@@ -336,20 +339,28 @@ function RecettesComponent() {
       time,
       difficulty,
       customQuery,
-      ingredientMode, // utile pour le prompt côté geminiService
+      ingredientMode,
+      language: i18n.language, // 🟢 Passé ici à Gemini pour génération multilingue
     };
-
 
     try {
       const recipe = await geminiService.generateRecipe(promptData);
       setGeneratedRecipe(recipe);
     } catch (error) {
       console.error(error);
-      addToast('Échec de la génération de recette', 'error');
+      addToast(
+        i18n.language === 'en'
+          ? 'Recipe generation failed'
+          : i18n.language === 'es'
+          ? 'Error al generar la receta'
+          : 'Échec de la génération de recette',
+        'error'
+      );
     } finally {
       setIsLoading(false);
     }
   };
+
 
   return (
     <div className="bg-white rounded-2xl shadow-lg p-6 md:p-8 border border-[#EAEAEA] animate-fade-in">

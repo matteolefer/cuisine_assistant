@@ -1,0 +1,23 @@
+{
+  "title": "Générer une Recette",
+  "diet": "Régime",
+  "normal": "Normal",
+  "vegetarian": "Végétarien",
+  "vegan": "Vegan",
+  "gluten_free": "Sans Gluten",
+  "people": "Personnes",
+  "max_time": "Temps Max (min)",
+  "difficulty": "Difficulté",
+  "easy": "Facile",
+  "medium": "Moyenne",
+  "hard": "Difficile",
+  "ingredient_usage": "Utilisation des ingrédients disponibles",
+  "use_all": "Utiliser tous les ingrédients disponibles",
+  "use_selected": "Sélectionner certains ingrédients",
+  "ignore": "Ignorer le stock",
+  "custom_query": "Envie particulière ?",
+  "placeholder_query": "Ex: 'Plat réconfortant', 'utiliser les courgettes'...",
+  "generate_button": "Trouver une recette",
+  "generating": "Génération...",
+  "generation_failed": "Échec de la génération de recette"
+}

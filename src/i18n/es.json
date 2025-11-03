@@ -1,0 +1,23 @@
+{
+  "title": "Generar una Receta",
+  "diet": "Dieta",
+  "normal": "Normal",
+  "vegetarian": "Vegetariana",
+  "vegan": "Vegana",
+  "gluten_free": "Sin gluten",
+  "people": "Personas",
+  "max_time": "Tiempo Máx (min)",
+  "difficulty": "Dificultad",
+  "easy": "Fácil",
+  "medium": "Media",
+  "hard": "Difícil",
+  "ingredient_usage": "Uso de ingredientes disponibles",
+  "use_all": "Usar todos los ingredientes disponibles",
+  "use_selected": "Seleccionar algunos ingredientes",
+  "ignore": "Ignorar la despensa",
+  "custom_query": "¿Antojo especial?",
+  "placeholder_query": "Ej: 'Comida reconfortante', 'usar calabacines'...",
+  "generate_button": "Buscar una receta",
+  "generating": "Generando...",
+  "generation_failed": "Error al generar la receta"
+}

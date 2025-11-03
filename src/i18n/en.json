@@ -1,0 +1,23 @@
+{
+  "title": "Generate a Recipe",
+  "diet": "Diet",
+  "normal": "Normal",
+  "vegetarian": "Vegetarian",
+  "vegan": "Vegan",
+  "gluten_free": "Gluten-free",
+  "people": "People",
+  "max_time": "Max Time (min)",
+  "difficulty": "Difficulty",
+  "easy": "Easy",
+  "medium": "Medium",
+  "hard": "Hard",
+  "ingredient_usage": "Ingredient Usage",
+  "use_all": "Use all available ingredients",
+  "use_selected": "Select specific ingredients",
+  "ignore": "Ignore stock",
+  "custom_query": "Special craving?",
+  "placeholder_query": "E.g., 'Comfort food', 'use zucchinis'...",
+  "generate_button": "Find a recipe",
+  "generating": "Generating...",
+  "generation_failed": "Recipe generation failed"
+}

@@ -1,55 +1,53 @@
-import { useEffect, useState } from 'react';
-import { onAuthStateChanged, signInAnonymously, signInWithCustomToken } from 'firebase/auth';
-
-const resolveGlobal = (key) => {
-  if (typeof window !== 'undefined' && typeof window[key] !== 'undefined') {
-    return window[key];
-  }
-  if (typeof globalThis !== 'undefined' && typeof globalThis[key] !== 'undefined') {
-    return globalThis[key];
-  }
-  return undefined;
-};
-
-const initialAuthToken =
-  resolveGlobal('__initial_auth_token') ||
-  (typeof import.meta !== 'undefined' && import.meta.env?.VITE_INITIAL_AUTH_TOKEN) ||
-  (typeof process !== 'undefined' && process.env?.VITE_INITIAL_AUTH_TOKEN) ||
-  null;
+import { useEffect, useState, useCallback } from 'react';
+import {
+  onAuthStateChanged,
+  GoogleAuthProvider,
+  signInWithPopup,
+  signOut,
+} from 'firebase/auth';
 
 export function useAuth(firebaseAuth) {
   const [userId, setUserId] = useState(null);
   const [isAuthReady, setIsAuthReady] = useState(false);
 
+  // --- ✅ Connexion Google ---
+  const handleGoogleLogin = useCallback(async () => {
+    if (!firebaseAuth) return;
+    try {
+      const provider = new GoogleAuthProvider();
+      await signInWithPopup(firebaseAuth, provider);
+    } catch (error) {
+      console.error('Erreur de connexion Google:', error);
+    }
+  }, [firebaseAuth]);
+
+  // --- ✅ Déconnexion ---
+  const handleLogout = useCallback(async () => {
+    if (!firebaseAuth) return;
+    try {
+      await signOut(firebaseAuth);
+    } catch (error) {
+      console.error('Erreur de déconnexion:', error);
+    }
+  }, [firebaseAuth]);
+
+  // --- 🔄 Suivi de l’état d’authentification ---
   useEffect(() => {
     if (!firebaseAuth) {
       setUserId(null);
       setIsAuthReady(false);
-      return undefined;
+      return;
     }
 
-    setIsAuthReady(false);
-
-    const unsubscribe = onAuthStateChanged(firebaseAuth, async (user) => {
-      if (user) {
-        setUserId(user.uid);
-      } else if (initialAuthToken) {
-        try {
-          await signInWithCustomToken(firebaseAuth, initialAuthToken);
-        } catch (error) {
-          console.error('Connexion avec token initial impossible, tentative anonyme.', error);
-          await signInAnonymously(firebaseAuth);
-        }
-      } else {
-        await signInAnonymously(firebaseAuth);
-      }
+    const unsubscribe = onAuthStateChanged(firebaseAuth, (user) => {
+      setUserId(user ? user.uid : null);
       setIsAuthReady(true);
     });
 
     return () => unsubscribe();
   }, [firebaseAuth]);
 
-  return { userId, isAuthReady };
+  return { userId, isAuthReady, handleGoogleLogin, handleLogout };
 }
 
 export default useAuth;

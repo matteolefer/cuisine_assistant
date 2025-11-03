@@ -1,10 +1,11 @@
 /**
- * Service Gemini (v2.6 - Fichier Isolé et robuste JSON)
+ * Service Gemini (v2.7 - Multilingue + JSON robuste)
  *
  * Ajouts :
- * ✅ Fonction `safeJsonParse()` tolérante aux guillemets simples et erreurs mineures.
- * ✅ Intégration dans `parseStructuredCandidate()` pour fiabiliser le parsing.
- * ✅ Amélioration du message système : "Réponds uniquement au format JSON strict".
+ * ✅ Gestion de la langue (fr, en, es) dans tous les prompts.
+ * ✅ Instructions automatiques selon la langue choisie.
+ * ✅ Intégration transparente avec i18n.language.
+ * ✅ safeJsonParse pour éviter les erreurs de format.
  */
 
 const API_URL_BASE =
@@ -26,14 +27,14 @@ function safeJsonParse(text) {
   if (!text) return null;
   try {
     return JSON.parse(text);
-  } catch (error) {
+  } catch {
     try {
       const fixed = text
-        .replace(/'/g, '"') // guillemets simples → doubles
-        .replace(/\n/g, '\\n') // retours à la ligne échappés
+        .replace(/'/g, '"')
+        .replace(/\n/g, '\\n')
         .replace(/\r/g, '\\r')
-        .replace(/,\s*}/g, '}') // virgule finale objet
-        .replace(/,\s*]/g, ']'); // virgule finale tableau
+        .replace(/,\s*}/g, '}')
+        .replace(/,\s*]/g, ']');
       return JSON.parse(fixed);
     } catch (err) {
       console.warn('❌ JSON extrait illisible:', err.message);
@@ -111,6 +112,18 @@ const parseStructuredCandidate = (result) => {
   return null;
 };
 
+// === 🌍 Définition des instructions linguistiques ===
+const getLanguageInstruction = (language = 'fr') => {
+  switch (language) {
+    case 'en':
+      return `Respond in English. Use metric units. Keep tone natural and appetizing.`;
+    case 'es':
+      return `Responde en español. Usa unidades métricas. Mantén un tono natural y apetitoso.`;
+    default:
+      return `Réponds en français avec des unités métriques et un ton chaleureux et appétissant.`;
+  }
+};
+
 // === 🍴 Formatage d’ingrédients ===
 const formatIngredientList = (items) => {
   if (!Array.isArray(items) || items.length === 0) return 'Aucun élément.';
@@ -135,9 +148,10 @@ const buildRecipePrompt = ({
   difficulty,
   customQuery,
   ingredientMode,
+  language = 'fr',
 }) => {
-  const baseBrief =
-    'Tu es un chef gastronomique. Propose une recette originale, précise et immédiatement exploitable.';
+  const baseBrief = `Tu es un chef gastronomique virtuel. ${getLanguageInstruction(language)} 
+Propose une recette originale, précise et immédiatement exploitable.`;
 
   const ingredientInstruction = {
     use_all: `
@@ -171,7 +185,7 @@ Ignore les ingrédients du stock et crée librement une recette cohérente, en s
     `Ingrédients disponibles:\n${formatIngredientList(ingredients)}`,
     `Équipements de cuisine disponibles:\n${formatIngredientList(equipments)}`,
     'Réponds uniquement au format JSON strict, sans texte avant ni après.',
-    'Utilise toujours des guillemets doubles et respecte le schéma suivant (snake_case).',
+    'Utilise des guillemets doubles et respecte ce schéma (snake_case).',
   ].join('\n\n');
 };
 
@@ -210,36 +224,16 @@ export const geminiService = {
     ],
   },
 
-  CATEGORIZE_SCHEMA: {
-    type: 'OBJECT',
-    properties: {
-      category: {
-        type: 'STRING',
-        enum: [
-          'Fruits',
-          'Légumes',
-          'Viandes',
-          'Poissons',
-          'Produits Laitiers',
-          'Boulangerie',
-          'Épicerie',
-          'Boissons',
-          'Surgelés',
-          'Autre',
-        ],
-      },
-    },
-    required: ['category'],
-  },
-
   async generateRecipe(promptData) {
     try {
-      const prompt = buildRecipePrompt(promptData);
+      // Récupération de la langue depuis promptData
+      const { language = 'fr' } = promptData;
+      const prompt = buildRecipePrompt({ ...promptData, language });
+
       const result = await callGemini({
         prompt,
-        systemInstruction: `Réponds uniquement en JSON pur valide (sans texte). Respecte ce schéma : ${JSON.stringify(
-          this.RECIPE_SCHEMA,
-        )}`,
+        systemInstruction: `${getLanguageInstruction(language)} 
+Réponds uniquement en JSON valide, conforme à ce schéma : ${JSON.stringify(this.RECIPE_SCHEMA)}`,
         generationConfig: {
           responseMimeType: 'application/json',
           responseSchema: this.RECIPE_SCHEMA,
@@ -254,100 +248,17 @@ export const geminiService = {
     } catch (error) {
       console.error('Erreur generateRecipe:', error);
       return {
-        titre: '[ERREUR IA] Recette de Démo',
-        description: `L’IA a échoué (${error.message}). Voici une recette de secours.`,
-        type_plat: 'Plat principal',
-        difficulte: 'Facile',
+        titre: '[ERREUR IA] Recipe Demo',
+        description: `IA failed (${error.message}). Demo fallback.`,
+        type_plat: 'Main dish',
+        difficulte: 'Easy',
         temps_preparation_minutes: 20,
         portions: 2,
-        ingredients_manquants: ['1 Pâte feuilletée'],
-        ingredients_utilises: ['3 Œufs', '200 ml de Crème'],
-        instructions: ['Préchauffer le four à 180°C.', 'Mélanger œufs et crème.', 'Enfourner 20 min.'],
+        ingredients_utilises: ['3 Eggs', '200 ml Cream'],
+        instructions: ['Preheat oven to 180°C.', 'Mix eggs and cream.', 'Bake 20 min.'],
         valeurs_nutritionnelles: { calories: '400 kcal' },
         error: true,
       };
-    }
-  },
-
-  async categorizeIngredient(ingredientName) {
-    try {
-      const prompt = `Classe l’ingrédient suivant dans une seule catégorie : "${ingredientName}".`;
-      const result = await callGemini({
-        prompt,
-        systemInstruction: `Réponds uniquement en JSON valide selon ce schéma : ${JSON.stringify(
-          this.CATEGORIZE_SCHEMA,
-        )}`,
-        generationConfig: {
-          responseMimeType: 'application/json',
-          responseSchema: this.CATEGORIZE_SCHEMA,
-          temperature: 0.2,
-        },
-      });
-      const parsed = parseStructuredCandidate(result);
-      return parsed?.category || 'Autre';
-    } catch (error) {
-      console.warn('Catégorisation IA indisponible, fallback:', error);
-      const categories = ['Fruits', 'Légumes', 'Épicerie', 'Produits Laitiers', 'Viandes', 'Poissons', 'Autre'];
-      return categories[Math.floor(Math.random() * categories.length)];
-    }
-  },
-
-  async formatImportedRecipe(recipeText) {
-    try {
-      const prompt = `Transforme la recette suivante en JSON structuré selon le schéma fourni.\n${recipeText}`;
-      const result = await callGemini({
-        prompt,
-        systemInstruction: `Réponds uniquement en JSON valide selon ce schéma : ${JSON.stringify(
-          this.RECIPE_SCHEMA,
-        )}`,
-        generationConfig: {
-          responseMimeType: 'application/json',
-          responseSchema: this.RECIPE_SCHEMA,
-          temperature: 0.5,
-        },
-      });
-      const parsed = parseStructuredCandidate(result);
-      return parsed || { titre: '[IMPORT] Recette brute', description: recipeText.slice(0, 100), instructions: [] };
-    } catch (error) {
-      console.warn('Formatage IA indisponible, fallback:', error);
-      return {
-        titre: `[IMPORT] ${recipeText.substring(0, 30)}...`,
-        description: 'Recette importée (fallback).',
-        instructions: recipeText.split('\n'),
-      };
-    }
-  },
-
-  async generateWeeklyPlan(savedRecipes, constraints = {}) {
-    try {
-      const serialized = JSON.stringify(
-        savedRecipes.map(({ id, titre, difficulte }) => ({ id, titre, difficulte })),
-      );
-      const prompt = `Crée un planning de repas équilibré sur 7 jours (déjeuner et dîner).
-Recettes disponibles: ${serialized}
-Contraintes: ${JSON.stringify(constraints)}
-Retourne un JSON de la forme {"YYYY-MM-DD": {"dejeuner": {"id": "...", "titre": "..."}, "diner": {...}}}.`;
-
-      const result = await callGemini({ prompt, generationConfig: { temperature: 0.6 } });
-      const text = result?.candidates?.[0]?.content?.parts?.[0]?.text;
-      if (text) return safeJsonParse(text);
-      throw new Error('Plan IA vide.');
-    } catch (error) {
-      console.warn('Planification IA indisponible, fallback:', error);
-      const week = {};
-      const today = new Date();
-      for (let i = 0; i < 7; i++) {
-        const d = new Date(today);
-        d.setDate(today.getDate() + i);
-        const dateStr = d.toISOString().split('T')[0];
-        const r1 = savedRecipes[Math.floor(Math.random() * savedRecipes.length)] || {};
-        const r2 = savedRecipes[Math.floor(Math.random() * savedRecipes.length)] || {};
-        week[dateStr] = {
-          dejeuner: { id: r1.id || 'lunch', titre: r1.titre || '[IA] Repas midi' },
-          diner: { id: r2.id || 'dinner', titre: r2.titre || '[IA] Repas soir' },
-        };
-      }
-      return week;
     }
   },
 };

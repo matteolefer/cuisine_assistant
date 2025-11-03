@@ -32,18 +32,6 @@ const resolveGlobalValue = (key) => {
   return undefined;
 };
 
-const parseMaybeJson = (value) => {
-  if (!value) return null;
-  if (typeof value === 'object') return value;
-  try {
-    const clean = value.trim().replace(/^'|"|'|"$/g, '');
-    return JSON.parse(clean);
-  } catch (error) {
-    console.warn('Impossible de parser la configuration Firebase fournie.', error, value);
-    return null;
-  }
-};
-
 // ------------------------------------------------------------
 // ⚙️ Configuration Firebase
 // ------------------------------------------------------------
@@ -122,8 +110,36 @@ export function AppProvider({ children }) {
     }
   }, [auth, db, firebaseConfig, initializationError]);
 
-  // --- Gestion Auth & Données Firestore ---
+  // --- Authentification ---
   const { userId, isAuthReady } = useAuth(auth);
+
+  // --- Connexion Google ---
+  const handleGoogleLogin = useCallback(async () => {
+    if (!auth) return;
+    const provider = new GoogleAuthProvider();
+    try {
+      const result = await signInWithPopup(auth, provider);
+      const user = result.user;
+      addToast(`Connecté en tant que ${user.displayName}`, 'success');
+    } catch (error) {
+      console.error('Erreur de connexion Google:', error);
+      addToast('Échec de la connexion Google', 'error');
+    }
+  }, [auth]);
+
+  // --- Déconnexion ---
+  const handleLogout = useCallback(async () => {
+    if (!auth) return;
+    try {
+      await signOut(auth);
+      addToast('Déconnecté avec succès', 'success');
+    } catch (error) {
+      console.error('Erreur de déconnexion:', error);
+      addToast('Erreur lors de la déconnexion', 'error');
+    }
+  }, [auth]);
+
+  // --- Données Firestore ---
   const { data: ingredients } = useFirestoreQuery(db, appId, userId, 'ingredients_stock');
   const { data: equipments } = useFirestoreQuery(db, appId, userId, 'equipments_stock');
   const { data: savedRecipes } = useFirestoreQuery(db, appId, userId, 'saved_recipes');
@@ -175,36 +191,16 @@ export function AppProvider({ children }) {
     }, 3000);
   }, []);
 
-  // --- Google Auth ---
-  const handleGoogleLogin = useCallback(async () => {
-    if (!auth) {
-      addToast('Firebase Auth non initialisé', 'error');
-      return;
-    }
-
-    const provider = new GoogleAuthProvider();
-    try {
-      const result = await signInWithPopup(auth, provider);
-      const user = result.user;
-      addToast(`Connecté en tant que ${user.displayName}`, 'success');
-    } catch (error) {
-      console.error('Erreur de connexion Google:', error);
-      addToast('Échec de la connexion Google', 'error');
-    }
-  }, [auth, addToast]);
-
-  const handleLogout = useCallback(async () => {
-    try {
-      await signOut(auth);
-      addToast('Déconnecté avec succès', 'success');
-    } catch (error) {
-      console.error('Erreur de déconnexion:', error);
-      addToast('Erreur lors de la déconnexion', 'error');
-    }
-  }, [auth, addToast]);
-
   // --- Autres états ---
   const [activeView, setActiveView] = useState(VIEWS.STOCK);
+
+    // --- Langue persistée ---
+  const [language, setLanguage] = useState(localStorage.getItem('culina_lang') || 'fr');
+
+  useEffect(() => {
+    localStorage.setItem('culina_lang', language);
+  }, [language]);
+
 
   // --- Valeur exposée ---
   const value = {
@@ -224,8 +220,10 @@ export function AppProvider({ children }) {
     plan,
     updatePlan,
     initializationError,
-    handleGoogleLogin, // ✅ connexion Google
-    handleLogout,      // ✅ déconnexion
+    handleGoogleLogin,
+    handleLogout,
+    language,
+    setLanguage,
   };
 
   return <AppContext.Provider value={value}>{children}</AppContext.Provider>;
