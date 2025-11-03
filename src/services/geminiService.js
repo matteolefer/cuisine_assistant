@@ -124,15 +124,105 @@ const getLanguageInstruction = (language = 'fr') => {
   }
 };
 
+const PROMPT_TEXTS = {
+  fr: {
+    intro: 'Tu es un chef gastronomique virtuel.',
+    goal: 'Propose une recette originale, précise et immédiatement exploitable.',
+    ingredientInstructions: {
+      use_all:
+        "Tu dois utiliser **tous les ingrédients listés ci-dessous**.\nTu peux aussi utiliser les ingrédients de base (sel, poivre, huile, beurre, sucre, farine, eau, lait, œufs, levure, herbes, épices).",
+      use_selected:
+        "Utilise **principalement les ingrédients listés ci-dessous**, mais tu peux ajouter d'autres ingrédients complémentaires si nécessaire.\nLes ingrédients de base sont toujours disponibles (sel, poivre, huile, beurre, sucre, farine, eau, lait, œufs, levure, herbes, épices).",
+      ignore:
+        "Ignore les ingrédients du stock et crée librement une recette cohérente, en supposant que les ingrédients de base sont disponibles.",
+    },
+    constraintsHeading: 'Contraintes culinaires :',
+    noConstraints: 'Aucune contrainte.',
+    constraintLabels: {
+      diet: 'Régime',
+      servings: 'Portions',
+      time: 'Temps max',
+      difficulty: 'Difficulté',
+      customQuery: 'Demande spécifique',
+    },
+    timeUnit: 'minutes',
+    availableIngredients: 'Ingrédients disponibles :',
+    availableEquipments: 'Équipements de cuisine disponibles :',
+    none: 'Aucun élément.',
+    categoryLabel: 'Catégorie',
+    jsonReminder: 'Réponds uniquement au format JSON strict, sans texte avant ni après.',
+    schemaReminder: 'Utilise des guillemets doubles et respecte ce schéma (snake_case).',
+    schemaLabel: 'Schéma JSON :',
+  },
+  en: {
+    intro: 'You are a virtual gastronomic chef.',
+    goal: 'Suggest an original, precise recipe that can be cooked immediately.',
+    ingredientInstructions: {
+      use_all:
+        'Use **every ingredient listed below**.\nYou may also rely on pantry staples (salt, pepper, oil, butter, sugar, flour, water, milk, eggs, yeast, herbs, spices).',
+      use_selected:
+        'Use **mainly the ingredients listed below**, but you may complement them with other items if needed.\nPantry staples are always available (salt, pepper, oil, butter, sugar, flour, water, milk, eggs, yeast, herbs, spices).',
+      ignore:
+        'Ignore the pantry stock and create a coherent recipe freely, assuming pantry staples are available.',
+    },
+    constraintsHeading: 'Culinary constraints:',
+    noConstraints: 'No particular constraint.',
+    constraintLabels: {
+      diet: 'Diet',
+      servings: 'Servings',
+      time: 'Max time',
+      difficulty: 'Difficulty',
+      customQuery: 'Special request',
+    },
+    timeUnit: 'minutes',
+    availableIngredients: 'Available ingredients:',
+    availableEquipments: 'Available kitchen equipment:',
+    none: 'No items.',
+    categoryLabel: 'Category',
+    jsonReminder: 'Answer strictly in valid JSON with no text before or after.',
+    schemaReminder: 'Use double quotes and respect this schema (snake_case).',
+    schemaLabel: 'JSON schema:',
+  },
+  es: {
+    intro: 'Eres un chef gastronómico virtual.',
+    goal: 'Propón una receta original, precisa y lista para cocinar de inmediato.',
+    ingredientInstructions: {
+      use_all:
+        'Debes usar **todos los ingredientes indicados a continuación**.\nTambién puedes apoyarte en los básicos de despensa (sal, pimienta, aceite, mantequilla, azúcar, harina, agua, leche, huevos, levadura, hierbas, especias).',
+      use_selected:
+        'Utiliza **principalmente los ingredientes indicados abajo**, pero puedes añadir otros complementarios si es necesario.\nLos básicos de despensa están siempre disponibles (sal, pimienta, aceite, mantequilla, azúcar, harina, agua, leche, huevos, levadura, hierbas, especias).',
+      ignore:
+        'Ignora el stock de la despensa y crea libremente una receta coherente, suponiendo que los básicos de despensa están disponibles.',
+    },
+    constraintsHeading: 'Restricciones culinarias:',
+    noConstraints: 'Sin restricciones.',
+    constraintLabels: {
+      diet: 'Dieta',
+      servings: 'Porciones',
+      time: 'Tiempo máx',
+      difficulty: 'Dificultad',
+      customQuery: 'Petición especial',
+    },
+    timeUnit: 'minutos',
+    availableIngredients: 'Ingredientes disponibles:',
+    availableEquipments: 'Equipamiento de cocina disponible:',
+    none: 'Ningún elemento.',
+    categoryLabel: 'Categoría',
+    jsonReminder: 'Responde únicamente en JSON válido, sin texto antes ni después.',
+    schemaReminder: 'Usa comillas dobles y respeta este esquema (snake_case).',
+    schemaLabel: 'Esquema JSON:',
+  },
+};
+
 // === 🍴 Formatage d’ingrédients ===
-const formatIngredientList = (items) => {
-  if (!Array.isArray(items) || items.length === 0) return 'Aucun élément.';
+const formatIngredientList = (items, strings) => {
+  if (!Array.isArray(items) || items.length === 0) return strings.none;
   return items
     .map((item) => {
       if (typeof item === 'string') return `- ${item}`;
       const { name, quantity, unit, category } = item;
       const qty = quantity ? `${quantity} ${unit || ''}`.trim() : '';
-      const cat = category ? ` | Catégorie: ${category}` : '';
+      const cat = category ? ` | ${strings.categoryLabel}: ${category}` : '';
       return `- ${name}${qty ? ` (${qty})` : ''}${cat}`;
     })
     .join('\n');
@@ -150,42 +240,30 @@ const buildRecipePrompt = ({
   ingredientMode,
   language = 'fr',
 }) => {
-  const baseBrief = `Tu es un chef gastronomique virtuel. ${getLanguageInstruction(language)} 
-Propose une recette originale, précise et immédiatement exploitable.`;
+  const strings = PROMPT_TEXTS[language] || PROMPT_TEXTS.fr;
+  const baseBrief = `${strings.intro} ${getLanguageInstruction(language)} ${strings.goal}`;
 
-  const ingredientInstruction = {
-    use_all: `
-Tu dois utiliser **tous les ingrédients listés ci-dessous**.
-Tu peux aussi utiliser les ingrédients de base (sel, poivre, huile, beurre, sucre, farine, eau, lait, œufs, levure, herbes, épices).
-    `,
-    use_selected: `
-Utilise **principalement les ingrédients listés ci-dessous**, mais tu peux ajouter d'autres ingrédients complémentaires si nécessaire.
-Les ingrédients de base sont toujours disponibles (sel, poivre, huile, beurre, sucre, farine, eau, lait, œufs, levure, herbes, épices).
-    `,
-    ignore: `
-Ignore les ingrédients du stock et crée librement une recette cohérente, en supposant que les ingrédients de base sont disponibles.
-    `,
-  }[ingredientMode || 'use_all'];
+  const ingredientInstruction = strings.ingredientInstructions[ingredientMode || 'use_all'];
 
   const constraints = [
-    diet && `Régime: ${diet}`,
-    servings && `Portions: ${servings}`,
-    time && `Temps max: ${time} minutes`,
-    difficulty && `Difficulté: ${difficulty}`,
-    customQuery && `Demande spécifique: ${customQuery}`,
+    diet && `${strings.constraintLabels.diet}: ${diet}`,
+    servings && `${strings.constraintLabels.servings}: ${servings}`,
+    time && `${strings.constraintLabels.time}: ${time} ${strings.timeUnit}`,
+    difficulty && `${strings.constraintLabels.difficulty}: ${difficulty}`,
+    customQuery && `${strings.constraintLabels.customQuery}: ${customQuery}`,
   ]
     .filter(Boolean)
     .join('\n');
 
   return [
     baseBrief,
-    'Contraintes culinaires:',
-    constraints || 'Aucune contrainte.',
+    strings.constraintsHeading,
+    constraints || strings.noConstraints,
     ingredientInstruction,
-    `Ingrédients disponibles:\n${formatIngredientList(ingredients)}`,
-    `Équipements de cuisine disponibles:\n${formatIngredientList(equipments)}`,
-    'Réponds uniquement au format JSON strict, sans texte avant ni après.',
-    'Utilise des guillemets doubles et respecte ce schéma (snake_case).',
+    `${strings.availableIngredients}\n${formatIngredientList(ingredients, strings)}`,
+    `${strings.availableEquipments}\n${formatIngredientList(equipments, strings)}`,
+    strings.jsonReminder,
+    strings.schemaReminder,
   ].join('\n\n');
 };
 
@@ -229,11 +307,16 @@ export const geminiService = {
       // Récupération de la langue depuis promptData
       const { language = 'fr' } = promptData;
       const prompt = buildRecipePrompt({ ...promptData, language });
+      const strings = PROMPT_TEXTS[language] || PROMPT_TEXTS.fr;
 
       const result = await callGemini({
         prompt,
-        systemInstruction: `${getLanguageInstruction(language)} 
-Réponds uniquement en JSON valide, conforme à ce schéma : ${JSON.stringify(this.RECIPE_SCHEMA)}`,
+        systemInstruction: [
+          getLanguageInstruction(language),
+          strings.jsonReminder,
+          strings.schemaReminder,
+          `${strings.schemaLabel} ${JSON.stringify(this.RECIPE_SCHEMA)}`,
+        ].join('\n'),
         generationConfig: {
           responseMimeType: 'application/json',
           responseSchema: this.RECIPE_SCHEMA,

@@ -26,9 +26,11 @@ function AppShell() {
     handleGoogleLogin,
     handleLogout,
     initializationError,
+    language,
+    setLanguage,
   } = useAppContext();
 
-  const { t, i18n } = useTranslation();
+  const { t } = useTranslation();
 
   // --- 🔴 Erreur Firebase ---
   if (initializationError) {
@@ -133,16 +135,13 @@ function AppShell() {
         <div className="flex flex-col sm:flex-row items-center gap-4 mt-6 sm:mt-0">
           {/* Sélecteur de langue */}
           <select
-            value={i18n.language}
-            onChange={(e) => {
-              i18n.changeLanguage(e.target.value);
-              localStorage.setItem('culina_lang', e.target.value);
-            }}
+            value={language}
+            onChange={(event) => setLanguage(event.target.value)}
             className="bg-white border border-gray-300 rounded-md px-2 py-1 text-sm text-gray-700 focus:outline-none"
           >
-            <option value="fr">🇫🇷 FR</option>
-            <option value="en">🇬🇧 EN</option>
-            <option value="es">🇪🇸 ES</option>
+            <option value="fr">{t('language.fr', '🇫🇷 Français')}</option>
+            <option value="en">{t('language.en', '🇬🇧 English')}</option>
+            <option value="es">{t('language.es', '🇪🇸 Español')}</option>
           </select>
 
           {/* Bouton Logout */}
@@ -151,7 +150,7 @@ function AppShell() {
             className="flex items-center bg-[#627E63] text-white font-medium px-5 py-2 rounded-full shadow-md hover:bg-[#506C52] transition-all"
           >
             <icons.Logout className="w-5 h-5 mr-2" />
-            {t('auth.logout', 'Déconnexion')}
+            {t('app.logout', 'Déconnexion')}
           </button>
         </div>
       </header>
@@ -168,7 +167,7 @@ function AppShell() {
                 : 'bg-white text-[#627E63] hover:bg-[#DFF6E3]'
             }`}
           >
-            {formatViewLabel(viewKey)}
+            {t(`app.views.${viewKey}`, formatViewLabel(viewKey))}
           </button>
         ))}
       </nav>

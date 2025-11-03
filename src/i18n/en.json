@@ -1,23 +1,121 @@
 {
-  "title": "Generate a Recipe",
-  "diet": "Diet",
-  "normal": "Normal",
-  "vegetarian": "Vegetarian",
-  "vegan": "Vegan",
-  "gluten_free": "Gluten-free",
-  "people": "People",
-  "max_time": "Max Time (min)",
-  "difficulty": "Difficulty",
-  "easy": "Easy",
-  "medium": "Medium",
-  "hard": "Hard",
-  "ingredient_usage": "Ingredient Usage",
-  "use_all": "Use all available ingredients",
-  "use_selected": "Select specific ingredients",
-  "ignore": "Ignore stock",
-  "custom_query": "Special craving?",
-  "placeholder_query": "E.g., 'Comfort food', 'use zucchinis'...",
-  "generate_button": "Find a recipe",
-  "generating": "Generating...",
-  "generation_failed": "Recipe generation failed"
+  "app": {
+    "title": "Culina",
+    "subtitle": "Cook simply, feel inspired",
+    "logout": "Sign out",
+    "made_with": "Made with ❤️ and React",
+    "views": {
+      "stock": "Pantry",
+      "equipement": "Equipment",
+      "recettes": "Recipes",
+      "favoris": "Favorites",
+      "courses": "Groceries",
+      "planification": "Planning"
+    }
+  },
+  "auth": {
+    "login_google": "Sign in with Google",
+    "notice": "Your Google account is only used for secure access and recipe synchronization."
+  },
+  "language": {
+    "fr": "🇫🇷 French",
+    "en": "🇬🇧 English",
+    "es": "🇪🇸 Spanish"
+  },
+  "error": {
+    "firebase_title": "Firebase configuration required",
+    "firebase_step1": "Enable Firestore and Authentication in the Firebase console.",
+    "firebase_step2": "Provide your web config via window.__firebase_config or VITE_FIREBASE_CONFIG.",
+    "firebase_step3": "Reload the page and check the console if the error persists."
+  },
+  "recipe": {
+    "generator": {
+      "title": "Generate a recipe",
+      "diet_label": "Diet",
+      "diet_options": {
+        "normal": "Omnivore",
+        "vegetarian": "Vegetarian",
+        "vegan": "Vegan",
+        "gluten_free": "Gluten-free"
+      },
+      "people_label": "Servings",
+      "max_time_label": "Max time (min)",
+      "difficulty_label": "Difficulty",
+      "difficulty_options": {
+        "easy": "Easy",
+        "medium": "Medium",
+        "hard": "Hard"
+      },
+      "time_options": {
+        "15": "15 min",
+        "30": "30 min",
+        "45": "45 min",
+        "60": "60+ min"
+      },
+      "ingredient_usage_label": "Ingredient usage",
+      "ingredient_modes": {
+        "use_all": "Use all available ingredients",
+        "use_selected": "Select specific ingredients",
+        "ignore": "Ignore the pantry"
+      },
+      "custom_query_label": "Special craving?",
+      "custom_query_placeholder": "E.g. ‘Comfort food’, ‘use zucchinis’...",
+      "generate_button": "Find a recipe",
+      "generating": "Generating..."
+    },
+    "display": {
+      "edit_mode_title": "Edit mode",
+      "fields": {
+        "title": "Title",
+        "time": "Time (min)",
+        "difficulty": "Difficulty",
+        "portions": "Servings",
+        "available_ingredients": "Available ingredients (one per line)",
+        "missing_ingredients": "Missing ingredients (one per line)",
+        "instructions": "Instructions (one per line)"
+      },
+      "sections": {
+        "available_ingredients": "Available ingredients",
+        "missing_ingredients": "Missing ingredients",
+        "instructions": "Instructions",
+        "review": "Your review"
+      },
+      "labels": {
+        "note": "Rating:",
+        "time": "{{count}} min",
+        "difficulty": "Difficulty: {{value}}",
+        "servings": "{{count}} serving",
+        "servings_plural": "{{count}} servings"
+      },
+      "placeholders": {
+        "personal_note": "Add a personal note..."
+      },
+      "messages": {
+        "all_available": "All ingredients are already available.",
+        "nothing_missing": "Everything is in your pantry!"
+      },
+      "buttons": {
+        "confirm_edit": "Save changes",
+        "cancel_edit": "Cancel",
+        "add_missing": "Add {{count}} missing ingredient(s) to the shopping list",
+        "edit": "Edit recipe",
+        "save": "Save to favorites",
+        "saving": "Saving..."
+      }
+    }
+  },
+  "toast": {
+    "login_success": "Signed in as {{name}}",
+    "login_error": "Google sign-in failed",
+    "logout_success": "Signed out successfully",
+    "logout_error": "Error while signing out",
+    "edit_saved": "Changes saved.",
+    "recipe_saved": "Recipe saved!",
+    "save_error": "Save error",
+    "no_missing_ingredients": "No missing ingredients to add.",
+    "already_in_shopping_list": "These ingredients are already on your shopping list.",
+    "missing_added": "{{count}} ingredient(s) added to the shopping list.",
+    "shopping_list_error": "Error while adding to the shopping list",
+    "generation_error": "Recipe generation failed"
+  }
 }
