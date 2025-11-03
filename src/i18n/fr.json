@@ -180,7 +180,8 @@
       "open": "Importer une recette",
       "placeholder": "Collez ici le texte brut de votre recette...",
       "formatting": "Formatage IA...",
-      "submit": "Formater et Sauvegarder"
+      "submit": "Formater et Sauvegarder",
+      "fallback_title": "Recette importée (brouillon)"
     },
     "empty": {
       "title": "Aucun favori",
@@ -189,6 +190,7 @@
     "toast": {
       "import_success": "Recette importée !",
       "import_error": "Erreur d'importation",
+      "import_fallback": "Formatage IA indisponible, brouillon sauvegardé.",
       "delete_success": "Recette supprimée.",
       "delete_error": "Erreur de suppression",
       "update_success": "Recette mise à jour !",
@@ -238,7 +240,10 @@
     "toast": {
       "generated": "Planning de la semaine généré !",
       "generate_empty": "L'IA n'a pas pu générer de planning.",
-      "generate_error": "Erreur de la génération IA."
+      "generate_error": "Erreur de la génération IA.",
+      "generate_invalid": "Le planning généré est incomplet.",
+      "generate_no_recipes": "Ajoutez au moins une recette favorite avant de générer un planning.",
+      "generate_partial": "Certaines suggestions ont été ajustées automatiquement."
     },
     "meals": {
       "breakfast": "Petit-déjeuner",
@@ -262,6 +267,7 @@
     "already_in_shopping_list": "Tous ces ingrédients sont déjà dans votre liste de courses.",
     "missing_added": "{{count}} ingrédient(s) ajouté(s) à la liste de courses.",
     "shopping_list_error": "Erreur lors de l’ajout à la liste de courses",
-    "generation_error": "Échec de la génération de recette"
+    "generation_error": "Échec de la génération de recette",
+    "categorize_fallback": "Catégorie IA indisponible pour {{name}} : utilisation de \"Autre\"."
   }
 }
