@@ -5,7 +5,7 @@ import firestoreService from '../../services/firestoreService';
 import Button from '../../components/ui/Button';
 import EmptyState from '../../components/ui/EmptyState';
 import Input from '../../components/ui/Input';
-import { icons } from '../../components/ui/icons';
+import Icons from '../../components/ui/icons';
 
 function EquipementComponent() {
   const { t } = useTranslation();
@@ -21,6 +21,7 @@ function EquipementComponent() {
       setNewItemName('');
       addToast(t('equipment.toast.add_success', 'Équipement ajouté !'));
     } catch (error) {
+      console.error('Erreur ajout équipement:', error);
       addToast(t('equipment.toast.add_error', "Erreur d'ajout"), 'error');
     }
   };
@@ -31,6 +32,7 @@ function EquipementComponent() {
       await firestoreService.deleteItem(db, path);
       addToast(t('equipment.toast.delete_success', 'Équipement supprimé.'), 'success');
     } catch (error) {
+      console.error('Erreur suppression équipement:', error);
       addToast(t('equipment.toast.delete_error', 'Erreur de suppression'), 'error');
     }
   };
@@ -56,14 +58,14 @@ function EquipementComponent() {
             className="bg-green-600 text-white p-4 hover:bg-green-700 transition flex items-center justify-center w-auto"
             aria-label={t('equipment.form.aria.submit', "Ajouter l'équipement")}
           >
-            <icons.Plus className="w-6 h-6" />
+            <Icons.Plus className="w-6 h-6" />
           </Button>
         </div>
       </form>
 
       {equipments.length === 0 ? (
         <EmptyState
-          icon={icons.Equipement}
+          icon={Icons.Equipement}
           title={t('equipment.empty.title', 'Aucun équipement')}
           message={t('equipment.empty.message', 'Ajoutez vos outils pour des recettes adaptées.')}
         />
@@ -83,7 +85,7 @@ function EquipementComponent() {
                   defaultValue: `Supprimer ${item.name}`,
                 })}
               >
-                <icons.Trash className="w-5 h-5" />
+                <Icons.Trash className="w-5 h-5" />
               </button>
             </li>
           ))}

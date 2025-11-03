@@ -3,7 +3,6 @@ import React, {
   useCallback,
   useContext,
   useEffect,
-  useMemo,
   useState,
 } from 'react';
 import { initializeApp } from 'firebase/app';
@@ -130,7 +129,7 @@ export function AppProvider({ children }) {
           "Impossible d'initialiser Firebase. Vérifiez la configuration fournie.",
       );
     }
-  }, [auth, db, firebaseConfig, initializationError]);
+  }, [auth, db]);
 
   // --- Authentification ---
   const { userId, isAuthReady } = useAuth(auth);
@@ -179,10 +178,7 @@ export function AppProvider({ children }) {
   const { data: shoppingList } = useFirestoreQuery(db, appId, userId, 'shopping_list');
 
   // --- Plan hebdomadaire ---
-  const planPath = useMemo(() => {
-    if (!appId || !userId) return null;
-    return `artifacts/${appId}/users/${userId}/planning/weekly_plan`;
-  }, [appId, userId]);
+  const planPath = appId && userId ? `artifacts/${appId}/users/${userId}/planning/weekly_plan` : null;
 
   const [plan, setPlan] = useState({});
 

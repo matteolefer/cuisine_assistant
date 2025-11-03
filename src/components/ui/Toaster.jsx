@@ -1,5 +1,5 @@
 import React from 'react';
-import { icons } from './icons';
+import Icons from './icons';
 
 function Toaster({ toasts }) {
   return (
@@ -15,9 +15,9 @@ function Toaster({ toasts }) {
         >
 
           {toast.type === 'success' ? (
-            <icons.Check className="w-5 h-5 mr-3" />
+            <Icons.Check className="w-5 h-5 mr-3" />
           ) : (
-            <icons.Alert className="w-5 h-5 mr-3" />
+            <Icons.Alert className="w-5 h-5 mr-3" />
           )}
           <span className="font-medium">{toast.message}</span>
         </div>

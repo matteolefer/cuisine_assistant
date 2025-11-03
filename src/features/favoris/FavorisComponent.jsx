@@ -5,7 +5,7 @@ import firestoreService from '../../services/firestoreService';
 import geminiService from '../../services/geminiService';
 import Button from '../../components/ui/Button';
 import EmptyState from '../../components/ui/EmptyState';
-import { icons } from '../../components/ui/icons';
+import Icons from '../../components/ui/icons';
 import { RecipeDisplay } from '../recettes/RecettesComponent';
 
 function FavorisComponent() {
@@ -30,6 +30,7 @@ function FavorisComponent() {
       setIsImporting(false);
       setImportText('');
     } catch (error) {
+      console.error('Erreur import favoris:', error);
       addToast(t('favorites.toast.import_error', "Erreur d'importation"), 'error');
     } finally {
       setIsFormatting(false);
@@ -42,6 +43,7 @@ function FavorisComponent() {
       await firestoreService.deleteItem(db, path);
       addToast(t('favorites.toast.delete_success', 'Recette supprimée.'), 'success');
     } catch (error) {
+      console.error('Erreur suppression favoris:', error);
       addToast(t('favorites.toast.delete_error', 'Erreur de suppression'), 'error');
     }
   };
@@ -53,6 +55,7 @@ function FavorisComponent() {
       if (!silent) addToast(t('favorites.toast.update_success', 'Recette mise à jour !'));
       setViewRecipe(recipeData);
     } catch (error) {
+      console.error('Erreur sauvegarde favoris:', error);
       if (!silent) addToast(t('favorites.toast.update_error', 'Erreur de sauvegarde'), 'error');
     }
   };
@@ -65,7 +68,7 @@ function FavorisComponent() {
 
       <div className="mb-6">
         <Button onClick={() => setIsImporting(!isImporting)} variant="secondary" className="w-full">
-          <icons.Import className="w-5 h-5 inline mr-2" />
+          <Icons.Import className="w-5 h-5 inline mr-2" />
           {isImporting
             ? t('favorites.import.cancel', "Annuler l'importation")
             : t('favorites.import.open', 'Importer une recette')}
@@ -91,7 +94,7 @@ function FavorisComponent() {
 
       {savedRecipes.length === 0 ? (
         <EmptyState
-          icon={icons.Favoris}
+          icon={Icons.Favoris}
           title={t('favorites.empty.title', 'Aucun favori')}
           message={t('favorites.empty.message', 'Sauvegardez vos recettes générées pour les retrouver ici.')}
         />
@@ -111,7 +114,7 @@ function FavorisComponent() {
                 <p className="text-lg font-medium text-gray-800">{recipe.titre}</p>
                 <div className="flex items-center text-sm text-gray-500 mt-1">
                   {[...Array(5)].map((_, index) => (
-                    <icons.Star
+                    <Icons.Star
                       key={index}
                       className={`w-4 h-4 ${index < (recipe.note || 0) ? 'text-yellow-400 fill-yellow-400' : 'text-gray-300'}`}
                     />
@@ -128,7 +131,7 @@ function FavorisComponent() {
                   defaultValue: `Supprimer ${recipe.titre}`,
                 })}
               >
-                <icons.Trash className="w-5 h-5" />
+                <Icons.Trash className="w-5 h-5" />
               </Button>
             </li>
           ))}
@@ -143,7 +146,7 @@ function FavorisComponent() {
               className="absolute -top-2 -right-2 text-gray-700 bg-white rounded-full p-2 z-10 shadow"
               aria-label={t('favorites.modal.close', 'Fermer la vue')}
             >
-              <icons.Close className="w-6 h-6" />
+              <Icons.Close className="w-6 h-6" />
             </button>
             <RecipeDisplay recipe={viewRecipe} onSave={handleSave} />
           </div>

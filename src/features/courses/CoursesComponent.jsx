@@ -3,7 +3,7 @@ import { useTranslation } from 'react-i18next';
 import { useAppContext } from '../../context/AppContext';
 import firestoreService from '../../services/firestoreService';
 import EmptyState from '../../components/ui/EmptyState';
-import { icons } from '../../components/ui/icons';
+import Icons from '../../components/ui/icons';
 
 function CoursesComponent() {
   const { t } = useTranslation();
@@ -32,6 +32,7 @@ function CoursesComponent() {
       setNewItemName('');
       addToast(t('shopping.toast.add_success', 'Article ajouté !'));
     } catch (error) {
+      console.error('Erreur ajout courses:', error);
       addToast(t('shopping.toast.add_error', "Erreur d'ajout"), 'error');
     }
   };
@@ -42,6 +43,7 @@ function CoursesComponent() {
       await firestoreService.deleteItem(db, path);
       addToast(t('shopping.toast.delete_success', 'Article supprimé.'), 'success');
     } catch (error) {
+      console.error('Erreur suppression courses:', error);
       addToast(t('shopping.toast.delete_error', 'Erreur de suppression'), 'error');
     }
   };
@@ -51,6 +53,7 @@ function CoursesComponent() {
       const path = `artifacts/${appId}/users/${userId}/shopping_list/${id}`;
       await firestoreService.updateItem(db, path, { purchased: !currentState });
     } catch (error) {
+      console.error('Erreur bascule achat courses:', error);
       addToast(t('shopping.toast.toggle_error', 'Erreur de mise à jour'), 'error');
     }
   };
@@ -83,14 +86,14 @@ function CoursesComponent() {
             className="bg-green-600 text-white p-4 hover:bg-green-700 transition flex items-center justify-center"
             aria-label={t('shopping.form.aria.submit', 'Ajouter à la liste')}
           >
-            <icons.Plus className="w-6 h-6" />
+            <Icons.Plus className="w-6 h-6" />
           </button>
         </div>
       </form>
 
       {sortedList.length === 0 ? (
         <EmptyState
-          icon={icons.Courses}
+          icon={Icons.Courses}
           title={t('shopping.empty.title', 'Liste de courses vide')}
           message={t('shopping.empty.message', "Les ingrédients manquants des recettes s'ajouteront ici.")}
         />
@@ -134,7 +137,7 @@ function CoursesComponent() {
                       defaultValue: `Supprimer ${item.name}`,
                     })}
                   >
-                    <icons.Trash className="w-5 h-5" />
+                    <Icons.Trash className="w-5 h-5" />
                   </button>
                 </li>
               ))}

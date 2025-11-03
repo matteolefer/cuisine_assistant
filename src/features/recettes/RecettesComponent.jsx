@@ -8,7 +8,7 @@ import Input from '../../components/ui/Input';
 import Select from '../../components/ui/Select';
 import StarRating from '../../components/ui/StarRating';
 import GeneratingLoader from '../../components/ui/GeneratingLoader';
-import { icons } from '../../components/ui/icons';
+import Icons from '../../components/ui/icons';
 import { useTranslation } from 'react-i18next';
 
 const DIET_OPTIONS = ['normal', 'vegetarian', 'vegan', 'gluten_free'];
@@ -56,6 +56,7 @@ export function RecipeDisplay({ recipe: initialRecipe, onSave, isEditing: startE
       await onSave({ ...recipe, note: rating, note_personnelle: personalNote }, false);
       addToast(t('toast.recipe_saved'));
     } catch (error) {
+      console.error('Erreur sauvegarde recette:', error);
       addToast(t('toast.save_error'), 'error');
     } finally {
       setIsSaving(false);
@@ -208,13 +209,13 @@ export function RecipeDisplay({ recipe: initialRecipe, onSave, isEditing: startE
 
       <div className="flex justify-between items-center text-sm text-gray-600 mb-6 border-y border-gray-200 py-3">
         <p className="flex items-center">
-          <icons.Clock className="w-4 h-4 mr-1.5" /> {timeLabel}
+          <Icons.Clock className="w-4 h-4 mr-1.5" /> {timeLabel}
         </p>
         <p className="flex items-center">
-          <icons.Menu className="w-4 h-4 mr-1.5" /> {difficultyLabel}
+          <Icons.Menu className="w-4 h-4 mr-1.5" /> {difficultyLabel}
         </p>
         <p className="flex items-center">
-          <icons.User className="w-4 h-4 mr-1.5" /> {servingsLabel}
+          <Icons.User className="w-4 h-4 mr-1.5" /> {servingsLabel}
         </p>
       </div>
 
@@ -226,7 +227,7 @@ export function RecipeDisplay({ recipe: initialRecipe, onSave, isEditing: startE
           <ul className="space-y-2 text-gray-700">
             {recipe.ingredients_utilises?.map((item, index) => (
               <li key={index} className="flex items-center">
-                <icons.Check className="w-4 h-4 mr-2 text-green-500" /> {item}
+                <Icons.Check className="w-4 h-4 mr-2 text-green-500" /> {item}
               </li>
             ))}
           </ul>
@@ -239,7 +240,7 @@ export function RecipeDisplay({ recipe: initialRecipe, onSave, isEditing: startE
             <ul className="space-y-2 text-gray-700">
               {recipe.ingredients_manquants.map((item, index) => (
                 <li key={index} className="flex items-center">
-                  <icons.Plus className="w-4 h-4 mr-2 text-red-500" /> {item}
+                  <Icons.Plus className="w-4 h-4 mr-2 text-red-500" /> {item}
                 </li>
               ))}
             </ul>
@@ -282,7 +283,7 @@ export function RecipeDisplay({ recipe: initialRecipe, onSave, isEditing: startE
             variant="danger"
             className="bg-corail-500 hover:bg-corail-600"
           >
-            <icons.Courses className="w-5 h-5 inline mr-2" />
+            <Icons.Courses className="w-5 h-5 inline mr-2" />
             {t('recipe.display.buttons.add_missing', {
               count: recipe.ingredients_manquants.length,
             })}
@@ -292,7 +293,7 @@ export function RecipeDisplay({ recipe: initialRecipe, onSave, isEditing: startE
         )}
 
         <Button onClick={() => setIsEditing(true)} variant="secondary">
-          <icons.Edit className="w-5 h-5 inline mr-2" />
+          <Icons.Edit className="w-5 h-5 inline mr-2" />
           {t('recipe.display.buttons.edit')}
         </Button>
       </div>

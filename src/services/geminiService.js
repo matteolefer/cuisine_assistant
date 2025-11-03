@@ -13,14 +13,32 @@ const API_URL_BASE =
 
 // === 🔑 Gestion des clés ===
 const getApiKey = () => {
-  if (typeof window !== 'undefined' && window.__gemini_api_key) return window.__gemini_api_key;
-  if (typeof import.meta !== 'undefined' && import.meta.env?.VITE_GEMINI_API_KEY)
+  if (typeof window !== 'undefined' && window.__gemini_api_key) {
+    return window.__gemini_api_key;
+  }
+
+  if (typeof import.meta !== 'undefined' && import.meta.env?.VITE_GEMINI_API_KEY) {
     return import.meta.env.VITE_GEMINI_API_KEY;
-  if (typeof process !== 'undefined' && process.env?.REACT_APP_GEMINI_API_KEY)
-    return process.env.REACT_APP_GEMINI_API_KEY;
-  if (typeof API_KEY !== 'undefined') return API_KEY;
+  }
+
+  const globalScope = typeof globalThis !== 'undefined' ? globalThis : undefined;
+  const nodeProcess = globalScope?.process;
+  if (nodeProcess?.env?.REACT_APP_GEMINI_API_KEY) {
+    return nodeProcess.env.REACT_APP_GEMINI_API_KEY;
+  }
+
+  const legacyApiKey = globalScope?.API_KEY;
+  if (typeof legacyApiKey === 'string') {
+    return legacyApiKey;
+  }
+
   return '';
 };
+
+const CONTROL_CHARS_REGEX = new RegExp(
+  `[${String.fromCharCode(0)}-${String.fromCharCode(31)}]+`,
+  'g',
+);
 
 // === 🧩 Fonction de parsing tolérante ===
 function safeJsonParse(text) {
@@ -91,7 +109,7 @@ const parseStructuredCandidate = (result) => {
     let text = part.text
       .replace(/^```json\s*/i, '')
       .replace(/```$/i, '')
-      .replace(/[\u0000-\u001F]+/g, '')
+      .replace(CONTROL_CHARS_REGEX, '')
       .trim();
 
     const lastBrace = text.lastIndexOf('}');

@@ -4,7 +4,7 @@ import { VIEWS } from '../../constants';
 import { featureComponents } from '../../features';
 import GeneratingLoader from '../ui/GeneratingLoader';
 import Toaster from '../ui/Toaster';
-import { icons } from '../ui/icons';
+import Icons from '../ui/icons';
 import { useTranslation } from 'react-i18next';
 
 function getFeatureComponent(view) {
@@ -149,7 +149,7 @@ function AppShell() {
             onClick={handleLogout}
             className="flex items-center bg-[#627E63] text-white font-medium px-5 py-2 rounded-full shadow-md hover:bg-[#506C52] transition-all"
           >
-            <icons.Logout className="w-5 h-5 mr-2" />
+            <Icons.Logout className="w-5 h-5 mr-2" />
             {t('app.logout', 'Déconnexion')}
           </button>
         </div>

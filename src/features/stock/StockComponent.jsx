@@ -7,7 +7,7 @@ import Button from '../../components/ui/Button';
 import Input from '../../components/ui/Input';
 import Select from '../../components/ui/Select';
 import EmptyState from '../../components/ui/EmptyState';
-import { icons } from '../../components/ui/icons';
+import Icons from '../../components/ui/icons';
 
 function StockComponent() {
   const { t } = useTranslation();
@@ -147,7 +147,7 @@ function StockComponent() {
           className="bg-green-600 text-white p-3 hover:bg-green-700 transition flex items-center justify-center w-full"
           aria-label={t('stock.form.aria.submit', "Ajouter l'ingrédient")}
         >
-          <icons.Plus className="w-5 h-5 mr-2" />
+          <Icons.Plus className="w-5 h-5 mr-2" />
           {t('stock.form.submit', 'Ajouter au stock')}
         </Button>
       </form>
@@ -155,7 +155,7 @@ function StockComponent() {
       {/* 🧂 Liste d’ingrédients */}
       {ingredients.length === 0 ? (
         <EmptyState
-          icon={icons.Stock}
+          icon={Icons.Stock}
           title={t('stock.empty.title', 'Votre garde-manger est vide')}
           message={t('stock.empty.message', 'Ajoutez vos ingrédients pour générer des recettes.')}
         />
@@ -189,7 +189,7 @@ function StockComponent() {
                       className="p-2 ml-4 text-red-500 hover:bg-red-100 rounded-full transition"
                       aria-label={t('stock.list.aria.delete', { name: item.name, defaultValue: `Supprimer ${item.name}` })}
                     >
-                      <icons.Trash className="w-5 h-5" />
+                      <Icons.Trash className="w-5 h-5" />
                     </button>
                   </li>
                 ))}

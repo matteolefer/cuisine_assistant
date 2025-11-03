@@ -4,7 +4,7 @@ import { useAppContext } from '../../context/AppContext';
 import geminiService from '../../services/geminiService';
 import Button from '../../components/ui/Button';
 import Select from '../../components/ui/Select';
-import { icons } from '../../components/ui/icons';
+import Icons from '../../components/ui/icons';
 
 function PlanificationComponent() {
   const { t } = useTranslation();
@@ -87,7 +87,7 @@ function PlanificationComponent() {
             ? t('planning.actions.generating', 'Génération IA...')
             : (
               <>
-                <icons.Recettes className="w-5 h-5 inline mr-2" />
+                <Icons.Recettes className="w-5 h-5 inline mr-2" />
                 {t('planning.actions.generate_button', 'Générer (IA)')}
               </>
             )}
