@@ -59,14 +59,43 @@ function PlanificationComponent() {
   };
 
   const handleAutoPlan = async () => {
+    if (savedRecipes.length === 0) {
+      addToast(
+        t(
+          'planning.toast.generate_no_recipes',
+          'Ajoutez au moins une recette favorite avant de générer un planning.',
+        ),
+        'warning',
+      );
+      return;
+    }
+
     setIsPlanningIA(true);
     try {
-      const generatedPlan = await geminiService.generateWeeklyPlan(savedRecipes, {});
-      if (generatedPlan) {
-        updatePlan(generatedPlan);
-        addToast(t('planning.toast.generated', 'Planning de la semaine généré !'));
-      } else {
-        addToast(t('planning.toast.generate_empty', "L'IA n'a pas pu générer de planning."), 'error');
+      const { plan: generatedPlan, warnings } = await geminiService.generateWeeklyPlan(savedRecipes, { language });
+
+      if (!generatedPlan || Object.keys(generatedPlan).length === 0) {
+        const warningKey = warnings?.includes('no_recipes')
+          ? 'planning.toast.generate_no_recipes'
+          : 'planning.toast.generate_invalid';
+        addToast(
+          t(warningKey, "L'IA n'a pas renvoyé de planning exploitable."),
+          'warning',
+        );
+        return;
+      }
+
+      updatePlan(generatedPlan);
+      addToast(t('planning.toast.generated', 'Planning de la semaine généré !'));
+
+      if (warnings && warnings.length > 0 && !warnings.includes('no_recipes')) {
+        addToast(
+          t('planning.toast.generate_partial', {
+            count: warnings.length,
+            defaultValue: 'Certaines suggestions ont été ajustées automatiquement.',
+          }),
+          'info',
+        );
       }
     } catch (error) {
       console.error(error);
