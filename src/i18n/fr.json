@@ -104,6 +104,152 @@
       }
     }
   },
+  "stock": {
+    "title": "Mon Garde-Manger",
+    "form": {
+      "fields": {
+        "ingredient": "Ingrédient",
+        "quantity": "Quantité",
+        "unit": "Unité"
+      },
+      "placeholders": {
+        "ingredient": "Ex: Farine, Tomates...",
+        "quantity": "Ex: 500"
+      },
+      "aria": {
+        "ingredient": "Nouvel ingrédient",
+        "quantity": "Quantité",
+        "submit": "Ajouter l'ingrédient"
+      },
+      "units": {
+        "pieces": "pièce(s)",
+        "grams": "g",
+        "kilograms": "kg",
+        "milliliters": "ml",
+        "liters": "L",
+        "teaspoon": "c. à café",
+        "tablespoon": "c. à soupe"
+      },
+      "submit": "Ajouter au stock"
+    },
+    "empty": {
+      "title": "Votre garde-manger est vide",
+      "message": "Ajoutez vos ingrédients pour générer des recettes."
+    },
+    "toast": {
+      "add_success": "Ingrédient ajouté au garde-manger !",
+      "add_error": "Erreur d'ajout de l'ingrédient",
+      "delete_success": "Ingrédient supprimé.",
+      "delete_error": "Erreur de suppression"
+    },
+    "list": {
+      "aria": {
+        "delete": "Supprimer {{name}}"
+      }
+    }
+  },
+  "equipment": {
+    "title": "Mes Équipements",
+    "form": {
+      "placeholder": "Ex: Four, Thermomix, Wok...",
+      "aria": {
+        "input": "Nouvel équipement",
+        "submit": "Ajouter l'équipement"
+      }
+    },
+    "empty": {
+      "title": "Aucun équipement",
+      "message": "Ajoutez vos outils pour des recettes adaptées."
+    },
+    "toast": {
+      "add_success": "Équipement ajouté !",
+      "add_error": "Erreur d'ajout",
+      "delete_success": "Équipement supprimé.",
+      "delete_error": "Erreur de suppression"
+    },
+    "list": {
+      "aria": {
+        "delete": "Supprimer {{name}}"
+      }
+    }
+  },
+  "favorites": {
+    "title": "Mes Favoris",
+    "import": {
+      "cancel": "Annuler l'importation",
+      "open": "Importer une recette",
+      "placeholder": "Collez ici le texte brut de votre recette...",
+      "formatting": "Formatage IA...",
+      "submit": "Formater et Sauvegarder"
+    },
+    "empty": {
+      "title": "Aucun favori",
+      "message": "Sauvegardez vos recettes générées pour les retrouver ici."
+    },
+    "toast": {
+      "import_success": "Recette importée !",
+      "import_error": "Erreur d'importation",
+      "delete_success": "Recette supprimée.",
+      "delete_error": "Erreur de suppression",
+      "update_success": "Recette mise à jour !",
+      "update_error": "Erreur de sauvegarde"
+    },
+    "list": {
+      "aria": {
+        "delete": "Supprimer {{name}}"
+      }
+    },
+    "modal": {
+      "close": "Fermer la vue"
+    }
+  },
+  "shopping": {
+    "title": "Liste de Courses",
+    "form": {
+      "placeholder": "Ex: Lait, Pain, Tomates...",
+      "aria": {
+        "input": "Nouvel article",
+        "submit": "Ajouter à la liste"
+      }
+    },
+    "empty": {
+      "title": "Liste de courses vide",
+      "message": "Les ingrédients manquants des recettes s'ajouteront ici."
+    },
+    "toast": {
+      "add_success": "Article ajouté !",
+      "add_error": "Erreur d'ajout",
+      "delete_success": "Article supprimé.",
+      "delete_error": "Erreur de suppression",
+      "toggle_error": "Erreur de mise à jour"
+    },
+    "list": {
+      "aria": {
+        "delete": "Supprimer {{name}}"
+      }
+    }
+  },
+  "planning": {
+    "title": "Plan de la Semaine",
+    "actions": {
+      "generating": "Génération IA...",
+      "generate_button": "Générer (IA)"
+    },
+    "toast": {
+      "generated": "Planning de la semaine généré !",
+      "generate_empty": "L'IA n'a pas pu générer de planning.",
+      "generate_error": "Erreur de la génération IA."
+    },
+    "meals": {
+      "breakfast": "Petit-déjeuner",
+      "lunch": "Déjeuner",
+      "dinner": "Dîner"
+    },
+    "select": {
+      "placeholder": "-- Choisir --"
+    }
+  },
+
   "toast": {
     "login_success": "Connecté en tant que {{name}}",
     "login_error": "Échec de la connexion Google",

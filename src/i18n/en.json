@@ -104,6 +104,152 @@
       }
     }
   },
+  "stock": {
+    "title": "My Pantry",
+    "form": {
+      "fields": {
+        "ingredient": "Ingredient",
+        "quantity": "Quantity",
+        "unit": "Unit"
+      },
+      "placeholders": {
+        "ingredient": "Ex: Flour, Tomatoes...",
+        "quantity": "Ex: 500"
+      },
+      "aria": {
+        "ingredient": "New ingredient",
+        "quantity": "Quantity",
+        "submit": "Add ingredient"
+      },
+      "units": {
+        "pieces": "piece(s)",
+        "grams": "g",
+        "kilograms": "kg",
+        "milliliters": "ml",
+        "liters": "L",
+        "teaspoon": "tsp",
+        "tablespoon": "tbsp"
+      },
+      "submit": "Add to pantry"
+    },
+    "empty": {
+      "title": "Your pantry is empty",
+      "message": "Add ingredients to generate recipes."
+    },
+    "toast": {
+      "add_success": "Ingredient added to pantry!",
+      "add_error": "Error adding ingredient",
+      "delete_success": "Ingredient removed.",
+      "delete_error": "Error removing ingredient"
+    },
+    "list": {
+      "aria": {
+        "delete": "Remove {{name}}"
+      }
+    }
+  },
+  "equipment": {
+    "title": "My Equipment",
+    "form": {
+      "placeholder": "Ex: Oven, Thermomix, Wok...",
+      "aria": {
+        "input": "New equipment",
+        "submit": "Add equipment"
+      }
+    },
+    "empty": {
+      "title": "No equipment",
+      "message": "Add your tools for tailored recipes."
+    },
+    "toast": {
+      "add_success": "Equipment added!",
+      "add_error": "Error adding",
+      "delete_success": "Equipment removed.",
+      "delete_error": "Error removing"
+    },
+    "list": {
+      "aria": {
+        "delete": "Remove {{name}}"
+      }
+    }
+  },
+  "favorites": {
+    "title": "My Favorites",
+    "import": {
+      "cancel": "Cancel import",
+      "open": "Import a recipe",
+      "placeholder": "Paste your raw recipe text here...",
+      "formatting": "Formatting with AI...",
+      "submit": "Format and Save"
+    },
+    "empty": {
+      "title": "No favorites",
+      "message": "Save generated recipes to find them here."
+    },
+    "toast": {
+      "import_success": "Recipe imported!",
+      "import_error": "Import error",
+      "delete_success": "Recipe removed.",
+      "delete_error": "Error removing",
+      "update_success": "Recipe updated!",
+      "update_error": "Save error"
+    },
+    "list": {
+      "aria": {
+        "delete": "Remove {{name}}"
+      }
+    },
+    "modal": {
+      "close": "Close preview"
+    }
+  },
+  "shopping": {
+    "title": "Shopping List",
+    "form": {
+      "placeholder": "Ex: Milk, Bread, Tomatoes...",
+      "aria": {
+        "input": "New item",
+        "submit": "Add to list"
+      }
+    },
+    "empty": {
+      "title": "Shopping list empty",
+      "message": "Missing ingredients from recipes will appear here."
+    },
+    "toast": {
+      "add_success": "Item added!",
+      "add_error": "Error adding",
+      "delete_success": "Item removed.",
+      "delete_error": "Error removing",
+      "toggle_error": "Update error"
+    },
+    "list": {
+      "aria": {
+        "delete": "Remove {{name}}"
+      }
+    }
+  },
+  "planning": {
+    "title": "Weekly Plan",
+    "actions": {
+      "generating": "Generating with AI...",
+      "generate_button": "Generate (AI)"
+    },
+    "toast": {
+      "generated": "Weekly plan created!",
+      "generate_empty": "AI couldn't generate a plan.",
+      "generate_error": "AI planning error."
+    },
+    "meals": {
+      "breakfast": "Breakfast",
+      "lunch": "Lunch",
+      "dinner": "Dinner"
+    },
+    "select": {
+      "placeholder": "-- Select --"
+    }
+  },
+
   "toast": {
     "login_success": "Signed in as {{name}}",
     "login_error": "Google sign-in failed",

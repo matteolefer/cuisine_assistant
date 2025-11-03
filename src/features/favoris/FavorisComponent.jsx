@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { useAppContext } from '../../context/AppContext';
 import firestoreService from '../../services/firestoreService';
 import geminiService from '../../services/geminiService';
@@ -8,6 +9,7 @@ import { icons } from '../../components/ui/icons';
 import { RecipeDisplay } from '../recettes/RecettesComponent';
 
 function FavorisComponent() {
+  const { t } = useTranslation();
   const { db, userId, appId, addToast, savedRecipes } = useAppContext();
   const [isImporting, setIsImporting] = useState(false);
   const [importText, setImportText] = useState('');
@@ -24,11 +26,11 @@ function FavorisComponent() {
       const path = `artifacts/${appId}/users/${userId}/saved_recipes`;
       await firestoreService.addItem(db, path, formattedRecipe);
 
-      addToast('Recette importée !');
+      addToast(t('favorites.toast.import_success', 'Recette importée !'));
       setIsImporting(false);
       setImportText('');
     } catch (error) {
-      addToast("Erreur d'importation", 'error');
+      addToast(t('favorites.toast.import_error', "Erreur d'importation"), 'error');
     } finally {
       setIsFormatting(false);
     }
@@ -38,9 +40,9 @@ function FavorisComponent() {
     try {
       const path = `artifacts/${appId}/users/${userId}/saved_recipes/${id}`;
       await firestoreService.deleteItem(db, path);
-      addToast('Recette supprimée.', 'success');
+      addToast(t('favorites.toast.delete_success', 'Recette supprimée.'), 'success');
     } catch (error) {
-      addToast('Erreur de suppression', 'error');
+      addToast(t('favorites.toast.delete_error', 'Erreur de suppression'), 'error');
     }
   };
 
@@ -48,21 +50,25 @@ function FavorisComponent() {
     try {
       const path = `artifacts/${appId}/users/${userId}/saved_recipes/${recipeData.id}`;
       await firestoreService.updateItem(db, path, recipeData);
-      if (!silent) addToast('Recette mise à jour !');
+      if (!silent) addToast(t('favorites.toast.update_success', 'Recette mise à jour !'));
       setViewRecipe(recipeData);
     } catch (error) {
-      if (!silent) addToast('Erreur de sauvegarde', 'error');
+      if (!silent) addToast(t('favorites.toast.update_error', 'Erreur de sauvegarde'), 'error');
     }
   };
 
   return (
     <div className="bg-white rounded-2xl shadow-lg p-6 md:p-8 border border-[#EAEAEA] animate-fade-in">
-      <h2 className="text-4xl font-bold text-gray-800 mb-6 tracking-tight">Mes Favoris</h2>
+      <h2 className="text-4xl font-bold text-gray-800 mb-6 tracking-tight">
+        {t('favorites.title', 'Mes Favoris')}
+      </h2>
 
       <div className="mb-6">
         <Button onClick={() => setIsImporting(!isImporting)} variant="secondary" className="w-full">
           <icons.Import className="w-5 h-5 inline mr-2" />
-          {isImporting ? "Annuler l'importation" : 'Importer une recette'}
+          {isImporting
+            ? t('favorites.import.cancel', "Annuler l'importation")
+            : t('favorites.import.open', 'Importer une recette')}
         </Button>
 
         {isImporting && (
@@ -72,10 +78,12 @@ function FavorisComponent() {
               onChange={(event) => setImportText(event.target.value)}
               className="w-full p-3 border border-gray-300 rounded-lg focus:border-green-500 focus:ring-green-500"
               rows="6"
-              placeholder="Collez ici le texte brut de votre recette..."
+              placeholder={t('favorites.import.placeholder', 'Collez ici le texte brut de votre recette...')}
             />
             <Button type="submit" disabled={isFormatting} variant="primary">
-              {isFormatting ? 'Formatage IA...' : 'Formater et Sauvegarder'}
+              {isFormatting
+                ? t('favorites.import.formatting', 'Formatage IA...')
+                : t('favorites.import.submit', 'Formater et Sauvegarder')}
             </Button>
           </form>
         )}
@@ -84,8 +92,8 @@ function FavorisComponent() {
       {savedRecipes.length === 0 ? (
         <EmptyState
           icon={icons.Favoris}
-          title="Aucun favori"
-          message="Sauvegardez vos recettes générées pour les retrouver ici."
+          title={t('favorites.empty.title', 'Aucun favori')}
+          message={t('favorites.empty.message', 'Sauvegardez vos recettes générées pour les retrouver ici.')}
         />
       ) : (
         <ul className="space-y-3">
@@ -115,7 +123,10 @@ function FavorisComponent() {
                 onClick={() => handleDelete(recipe.id)}
                 variant="danger"
                 className="p-2 ml-4 w-auto h-auto !bg-transparent !text-red-500 hover:!bg-red-100 rounded-full"
-                aria-label={`Supprimer ${recipe.titre}`}
+                aria-label={t('favorites.list.aria.delete', {
+                  name: recipe.titre,
+                  defaultValue: `Supprimer ${recipe.titre}`,
+                })}
               >
                 <icons.Trash className="w-5 h-5" />
               </Button>
@@ -130,7 +141,7 @@ function FavorisComponent() {
             <button
               onClick={() => setViewRecipe(null)}
               className="absolute -top-2 -right-2 text-gray-700 bg-white rounded-full p-2 z-10 shadow"
-              aria-label="Fermer la vue"
+              aria-label={t('favorites.modal.close', 'Fermer la vue')}
             >
               <icons.Close className="w-6 h-6" />
             </button>
